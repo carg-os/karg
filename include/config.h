@@ -1,0 +1,19 @@
+#ifndef CONFIG_H_
+#define CONFIG_H_
+
+#define BOOT_STACK_BASE 0x88000000
+#define KHEAP_SIZE 0x400000
+
+#define PLIC_BASE 0xC000000
+
+#define UART_BASE 0x10000000
+#define UART_REG_SIZE 1
+#define UART_RX_BUF_SIZE 128
+
+#define TIMER_FREQ 10000000
+
+#define PROC_TABLE_SIZE 256
+
+#define SCHED_TIMESLICE 10000000
+
+#endif // CONFIG_H_
