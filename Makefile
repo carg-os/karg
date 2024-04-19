@@ -31,7 +31,10 @@ $(BUILDDIR)/%.c.o: src/%.c | $(BUILDDIR)
 	@printf "  CC\t$(@F)\n"
 	@$(CC) $< -c -o $@ $(CFLAGS)
 
-$(BUILDDIR)/init.a: FORCE | $(BUILDDIR)
+init:
+	@git clone https://github.com/carg-os/init.git
+
+$(BUILDDIR)/init.a: FORCE | init $(BUILDDIR)
 	@$(MAKE) -C init BUILDDIR=$(BUILDDIR)
 
 $(BUILDDIR)/karg.elf: $(OBJS) $(BUILDDIR)/init.a kernel.ld | $(BUILDDIR)

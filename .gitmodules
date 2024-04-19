@@ -1,4 +1,0 @@
-[submodule "init"]
-	path = init
-	url = https://github.com/carg-os/init.git
-	branch = main
