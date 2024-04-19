@@ -3,13 +3,13 @@
 #include <config.h>
 #include <list.h>
 
-extern u8 _heap_start;
+extern u8 _heap_start[KHEAP_SIZE];
 
 static list_node_t free_list = LIST_HEAD_INIT(free_list);
 
 void init_page_alloc(void) {
-    list_node_t *node = (list_node_t *) &_heap_start;
-    while ((u8 *) node < &_heap_start + KHEAP_SIZE) {
+    list_node_t *node = (list_node_t *) _heap_start;
+    while ((u8 *) node < _heap_start + KHEAP_SIZE) {
         list_push_back(&free_list, node);
         node = (list_node_t *) ((u8 *) node + PAGE_SIZE);
     }

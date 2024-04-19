@@ -20,8 +20,9 @@ OBJS = $(patsubst src/%.S,$(BUILDDIR)/%.S.o,$(SRCS))
 OBJS := $(patsubst src/%.c,$(BUILDDIR)/%.c.o,$(OBJS))
 DEPS = $(patsubst %.o,%.d,$(OBJS))
 
-CFLAGS = -std=gnu2x -I include/ -MMD -Wall -Wextra -Werror -ffreestanding -mcmodel=medany
-LDFLAGS = -nostdlib
+CFLAGS = -std=gnu2x -I include/ -MMD -Wall -Wextra -Werror -ffreestanding \
+         -mcmodel=medany -O3 -fdata-sections -ffunction-sections -flto
+LDFLAGS = -nostdlib -Wl,--gc-sections -flto
 
 $(BUILDDIR)/%.S.o: src/%.S | $(BUILDDIR)
 	@printf "  CCAS\t$(@F)\n"

@@ -6,17 +6,14 @@
 #include <trap.h>
 #include <uart.h>
 
-extern void init(void);
+void init(void);
 
 static void init_subsystems(void) {
     init_page_alloc();
-
     init_plic();
     init_trap();
-
     init_uart();
     init_timer();
-
     init_sched();
 }
 
