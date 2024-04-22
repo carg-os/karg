@@ -12,12 +12,20 @@ void proc_entry(void);
 proc_t *proc_table[PROC_TABLE_SIZE];
 
 static pid_t new_pid(void) {
-    pid_t pid;
-    for (pid = 0; pid < PROC_TABLE_SIZE && proc_table[pid]; pid++)
-        ;
-    if (pid == PROC_TABLE_SIZE)
-        return -EAGAIN;
-    return pid;
+    static pid_t last_pid = PROC_TABLE_SIZE - 1;
+    for (pid_t pid = last_pid + 1; pid < PROC_TABLE_SIZE; pid++) {
+        if (!proc_table[pid]) {
+            last_pid = pid;
+            return pid;
+        }
+    }
+    for (pid_t pid = 0; pid < last_pid; pid++) {
+        if (!proc_table[pid]) {
+            last_pid = pid;
+            return pid;
+        }
+    }
+    return -EAGAIN;
 }
 
 i32 proc_init(proc_t *proc, void *entry, usize flags, proc_t *parent, i32 argc,
