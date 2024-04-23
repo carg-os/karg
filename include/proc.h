@@ -24,7 +24,7 @@ typedef struct proc {
     list_node_t tree_node;
 
     pid_t pid;
-    usize flags;
+    u32 flags;
     struct proc *parent;
     list_node_t children;
     list_node_t zombie_children;
@@ -41,7 +41,7 @@ typedef struct proc {
 
 extern proc_t *proc_table[];
 
-i32 proc_init(proc_t *proc, void *entry, usize flags, proc_t *parent, int argc,
+i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, int argc,
               char *argv[]);
 void proc_deinit(proc_t *proc);
 void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc);

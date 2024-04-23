@@ -28,7 +28,7 @@ static pid_t new_pid(void) {
     return -EAGAIN;
 }
 
-i32 proc_init(proc_t *proc, void *entry, usize flags, proc_t *parent, i32 argc,
+i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
               char *argv[]) {
     proc->pid = new_pid();
     if (proc->pid < 0)
