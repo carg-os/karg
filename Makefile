@@ -9,7 +9,12 @@ $(BUILDDIR):
 	@mkdir $(BUILDDIR)
 
 clean:
+	@$(RM) -rf html
 	@$(RM) -rf $(BUILDDIR)
+
+.PHONY: docs
+docs:
+	@doxygen
 
 CC = $(CROSS_PREFIX)gcc
 
