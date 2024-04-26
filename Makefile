@@ -9,7 +9,7 @@ $(BUILDDIR):
 	@mkdir $(BUILDDIR)
 
 clean:
-	@$(RM) -rf html
+	@$(RM) -rf docs/html
 	@$(RM) -rf $(BUILDDIR)
 
 .PHONY: docs
