@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#define IRQ_UART 10
+#define IRQ_UART 44
 
 void init_plic(void);
 void plic_enable_irq(u32 irq);

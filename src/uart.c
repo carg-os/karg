@@ -4,10 +4,12 @@
 #include <plic.h>
 #include <sem.h>
 
-#define REG(reg) *((volatile u8 *) UART_BASE + (reg))
+#define REG(reg) *((volatile u8 *) UART_BASE + UART_REG_SIZE * (reg))
 #define THR 0
 #define RBR 0
 #define IER 1
+#define IIR 2
+#define FCR 2
 #define LCR 3
 #define LSR 5
 
@@ -21,6 +23,8 @@ static usize rx_head = 0, rx_tail = 0;
 static usize cursor_pos = 0;
 
 void init_uart(void) {
+    REG(31);
+
     sem_init(&rx_sem);
 
     plic_enable_irq(IRQ_UART);
@@ -28,6 +32,9 @@ void init_uart(void) {
 }
 
 void uart_putc(char c) {
+    if (c == '\n')
+        uart_putc('\r');
+
     while (!(REG(LSR) & LSR_THRE))
         ;
     REG(THR) = c;
