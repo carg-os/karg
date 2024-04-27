@@ -5,6 +5,9 @@
 #include <sched.h>
 #include <uart.h>
 
+#define REBOOT_REBOOT 0
+#define REBOOT_SHUTDOWN 1
+
 [[noreturn]] static isize sys_exit(const trapframe_t *frame) {
     i32 status = frame->a0;
     proc_t *proc = curr_proc;
@@ -135,8 +138,14 @@ static isize sys_wait(const trapframe_t *frame) {
     return proc->pid;
 }
 
+static isize sys_reboot(const trapframe_t *frame) {
+    (void) frame;
+    *((volatile u32 *) 0x03010000) = 0x01;
+    unreachable();
+}
+
 isize (*const SYSCALL_TABLE[])(const trapframe_t *) = {
-    sys_exit,    sys_read,   sys_write, sys_yield,
-    sys_sleepns, sys_getpid, sys_proc,  sys_wait,
+    sys_exit,   sys_read, sys_write, sys_yield,  sys_sleepns,
+    sys_getpid, sys_proc, sys_wait,  sys_reboot,
 };
 const usize NR_SYSCALLS = sizeof(SYSCALL_TABLE) / sizeof(SYSCALL_TABLE[0]);

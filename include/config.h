@@ -5,6 +5,7 @@
 #define KHEAP_SIZE 0x400000
 
 #define PLIC_BASE 0x70000000
+#define IRQ_UART 44
 
 #define UART_BASE 0x04140000
 #define UART_REG_SIZE 4

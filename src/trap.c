@@ -1,5 +1,6 @@
 #include <trap.h>
 
+#include <config.h>
 #include <errno.h>
 #include <plic.h>
 #include <rv.h>

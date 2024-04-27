@@ -5,8 +5,8 @@
 #define EBADF 2
 #define ECHILD 3
 #define EFAULT 4
-#define ENOMEM 5
-#define ENOSYS 6
-#define ESRCH 7
+#define EINVAL 5
+#define ENOMEM 6
+#define ENOSYS 7
 
 #endif // ERRNO_H_

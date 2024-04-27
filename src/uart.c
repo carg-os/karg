@@ -10,7 +10,6 @@
 #define IER 1
 #define IIR 2
 #define FCR 2
-#define LCR 3
 #define LSR 5
 
 #define IER_ERBFI 0x01
@@ -23,8 +22,6 @@ static usize rx_head = 0, rx_tail = 0;
 static usize cursor_pos = 0;
 
 void init_uart(void) {
-    REG(31);
-
     sem_init(&rx_sem);
 
     plic_enable_irq(IRQ_UART);
@@ -49,6 +46,9 @@ char uart_getc(void) {
 }
 
 void uart_handle_intr(void) {
+    if (REG(IIR) == 0xC7)
+        REG(31);
+
     char c = REG(RBR);
 
     switch (c) {
