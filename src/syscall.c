@@ -139,18 +139,42 @@ static isize sys_wait(const trapframe_t *frame) {
 }
 
 static isize sys_reboot(const trapframe_t *frame) {
-    (void) frame;
+    switch (frame->a0) {
+    case REBOOT_REBOOT: {
 #if defined(PLATFORM_QEMU)
-    register usize a0 asm("a0") = 1;
-    register usize a1 asm("a1") = 0;
-    register usize a6 asm("a6") = 0;
-    register usize a7 asm("a7") = 0x53525354;
-    asm volatile("ecall" : "+r"(a0), "+r"(a1) : "r"(a6), "r"(a7));
+        register usize a0 asm("a0") = 1;
+        register usize a1 asm("a1") = 0;
+        register usize a6 asm("a6") = 0;
+        register usize a7 asm("a7") = 0x53525354;
+        asm volatile("ecall" : "+r"(a0), "+r"(a1) : "r"(a6), "r"(a7));
 #elif defined(PLATFORM_MILKV_DUO)
-    *((volatile u32 *) 0x03010000) = 0x01;
+        *((volatile u32 *) 0x03010000) = 0x01;
 #else
-    return -ENOSYS;
+        return -ENOSYS;
 #endif
+        break;
+    }
+    case REBOOT_SHUTDOWN: {
+#if defined(PLATFORM_QEMU)
+        register usize a0 asm("a0") = 0;
+        register usize a1 asm("a1") = 0;
+        register usize a6 asm("a6") = 0;
+        register usize a7 asm("a7") = 0x53525354;
+        asm volatile("ecall" : "+r"(a0), "+r"(a1) : "r"(a6), "r"(a7));
+#elif defined(PLATFORM_MILKV_DUO)
+        register usize a0 asm("a0");
+        register usize a1 asm("a1");
+        register usize a6 asm("a6") = 1;
+        register usize a7 asm("a7") = 0x48534D;
+        asm volatile("ecall" : "=r"(a0), "=r"(a1) : "r"(a6), "r"(a7));
+#else
+        return -ENOSYS;
+#endif
+        break;
+    }
+    default:
+        return -EINVAL;
+    }
     unreachable();
 }
 

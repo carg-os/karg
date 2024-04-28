@@ -12,6 +12,9 @@
 #define IIR 2
 #define FCR 2
 #define LSR 5
+#ifdef PLATFORM_MILKV_DUO
+#define USR 31
+#endif
 
 #define IER_ERBFI 0x01
 
@@ -47,8 +50,12 @@ char uart_getc(void) {
 }
 
 void uart_handle_intr(void) {
-    if (REG(IIR) == 0xC7)
-        REG(31);
+#ifdef PLATFORM_MILKV_DUO
+    if (REG(IIR) == 0xC7) {
+        REG(USR);
+        return;
+    }
+#endif
 
     char c = REG(RBR);
 
