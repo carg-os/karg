@@ -23,7 +23,7 @@ OBJS = $(patsubst src/%.S,$(BUILDDIR)/%.S.o,$(SRCS))
 OBJS := $(patsubst src/%.c,$(BUILDDIR)/%.c.o,$(OBJS))
 DEPS = $(patsubst %.o,%.d,$(OBJS))
 
-CFLAGS = -std=gnu2x -I include/ -MMD -Wall -Wextra -Werror -ffreestanding \
+CFLAGS = -std=gnu2x -I include/ -D PLATFORM_$(PLATFORM) -MMD -Wall -Wextra -Werror -ffreestanding \
          -mcmodel=medany -O3 -fdata-sections -ffunction-sections -flto
 
 $(BUILDDIR)/%.S.o: src/%.S | $(BUILDDIR)

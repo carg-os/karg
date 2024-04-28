@@ -1,7 +1,7 @@
 #include <trap.h>
 
-#include <config.h>
 #include <errno.h>
+#include <platform.h>
 #include <plic.h>
 #include <rv.h>
 #include <syscall.h>

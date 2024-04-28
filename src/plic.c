@@ -1,7 +1,7 @@
 #include <plic.h>
 
-#include <config.h>
 #include <csr.h>
+#include <platform.h>
 
 #define REG(reg) *((volatile u32 *) PLIC_BASE + (reg))
 #define INTR_PRIO(irq) irq

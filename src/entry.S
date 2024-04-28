@@ -1,4 +1,4 @@
-#include <config.h>
+#include <platform.h>
 
     .section .init
 

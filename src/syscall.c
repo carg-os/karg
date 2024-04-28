@@ -140,7 +140,17 @@ static isize sys_wait(const trapframe_t *frame) {
 
 static isize sys_reboot(const trapframe_t *frame) {
     (void) frame;
+#if defined(PLATFORM_QEMU)
+    register usize a0 asm("a0") = 1;
+    register usize a1 asm("a1") = 0;
+    register usize a6 asm("a6") = 0;
+    register usize a7 asm("a7") = 0x53525354;
+    asm volatile("ecall" : "+r"(a0), "+r"(a1) : "r"(a6), "r"(a7));
+#elif defined(PLATFORM_MILKV_DUO)
     *((volatile u32 *) 0x03010000) = 0x01;
+#else
+    return -ENOSYS;
+#endif
     unreachable();
 }
 

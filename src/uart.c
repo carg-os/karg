@@ -1,6 +1,7 @@
 #include <uart.h>
 
 #include <config.h>
+#include <platform.h>
 #include <plic.h>
 #include <sem.h>
 

@@ -1,9 +1,9 @@
 #include <timer.h>
 
-#include <config.h>
 #include <csr.h>
 #include <errno.h>
 #include <kalloc.h>
+#include <platform.h>
 
 static list_node_t wait_queue = LIST_HEAD_INIT(wait_queue);
 
