@@ -6,7 +6,7 @@
 
 static usize print_usize(usize val, i32 radix) {
     if (val == 0) {
-        uart_putc('0');
+        uart_putc(0, '0');
         return 1;
     }
 
@@ -25,7 +25,7 @@ static usize print_usize(usize val, i32 radix) {
     }
 
     for (usize i = pos; i < sizeof(buf); i++) {
-        uart_putc(buf[i]);
+        uart_putc(0, buf[i]);
     }
 
     return sizeof(buf) - pos;
@@ -35,7 +35,7 @@ static usize print_isize(isize val, i32 radix) {
     usize n = 0;
 
     if (val < 0) {
-        uart_putc('-');
+        uart_putc(0, '-');
         n++;
         val = -val;
     }
@@ -49,9 +49,9 @@ static usize print_ptr(void *ptr) {
     for (usize i = sizeof(ptr) * 2; i > 0; i--) {
         u8 nibble = (usize) ptr >> ((i - 1) * 4) & 0xF;
         if (nibble < 10) {
-            uart_putc(nibble + '0');
+            uart_putc(0, nibble + '0');
         } else {
-            uart_putc(nibble - 10 + 'a');
+            uart_putc(0, nibble - 10 + 'a');
         }
     }
     return sizeof(ptr) * 2;
@@ -64,7 +64,7 @@ isize kprintf(const char *fmt, ...) {
 
     while (*fmt) {
         if (*fmt != '%') {
-            uart_putc(*fmt);
+            uart_putc(0, *fmt);
             fmt++;
             n++;
             continue;
@@ -73,17 +73,17 @@ isize kprintf(const char *fmt, ...) {
         fmt++;
         switch (*fmt) {
         case '%':
-            uart_putc('%');
+            uart_putc(0, '%');
             n++;
             break;
         case 'c':
-            uart_putc(va_arg(args, isize));
+            uart_putc(0, va_arg(args, isize));
             n++;
             break;
         case 's': {
             const char *s = va_arg(args, const char *);
             for (; *s; s++) {
-                uart_putc(*s);
+                uart_putc(0, *s);
                 n++;
             }
             break;

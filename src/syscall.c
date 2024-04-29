@@ -42,13 +42,18 @@ static isize sys_read(const trapframe_t *frame) {
     isize fd = frame->a0;
     u8 *buf = (u8 *) frame->a1;
     usize size = frame->a2;
-    if (fd != 0)
+    if (is_bad_fd(fd))
         return -EBADF;
+    if (!(curr_proc->fds[fd].flags & FD_FLAG_READABLE))
+        return -EINVAL;
     if (!buf)
         return -EFAULT;
 
     for (usize i = 0; i < size; i++) {
-        buf[i] = uart_getc();
+        i32 res = dev_getc(curr_proc->fds[fd].dev);
+        if (res < 0)
+            return res;
+        buf[i] = res;
     }
     return size;
 }
@@ -57,13 +62,17 @@ static isize sys_write(const trapframe_t *frame) {
     isize fd = frame->a0;
     const u8 *buf = (const u8 *) frame->a1;
     usize size = frame->a2;
-    if (fd != 1)
+    if (is_bad_fd(fd))
         return -EBADF;
+    if (!(curr_proc->fds[fd].flags & FD_FLAG_WRITABLE))
+        return -EINVAL;
     if (!buf)
         return -EFAULT;
 
     for (usize i = 0; i < size; i++) {
-        uart_putc(buf[i]);
+        i32 res = dev_putc(curr_proc->fds[fd].dev, buf[i]);
+        if (res < 0)
+            return res;
     }
     return size;
 }

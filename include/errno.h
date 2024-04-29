@@ -8,5 +8,6 @@
 #define EINVAL 5
 #define ENOMEM 6
 #define ENOSYS 7
+#define ENXIO 8
 
 #endif // ERRNO_H_

@@ -32,23 +32,6 @@ void init_uart(void) {
     REG(IER) = IER_ERBFI;
 }
 
-void uart_putc(char c) {
-    if (c == '\n')
-        uart_putc('\r');
-
-    while (!(REG(LSR) & LSR_THRE))
-        ;
-    REG(THR) = c;
-}
-
-char uart_getc(void) {
-    sem_wait(&rx_sem);
-    char c = rx_buf[rx_head];
-    rx_head++;
-    rx_head %= UART_RX_BUF_SIZE;
-    return c;
-}
-
 void uart_handle_intr(void) {
 #ifdef PLATFORM_MILKV_DUO
     if (REG(IIR) == 0xC7) {
@@ -79,9 +62,9 @@ void uart_handle_intr(void) {
 
             cursor_pos--;
 
-            uart_putc('\b');
-            uart_putc(' ');
-            uart_putc('\b');
+            uart_putc(0, '\b');
+            uart_putc(0, ' ');
+            uart_putc(0, '\b');
         }
         break;
     default:
@@ -95,8 +78,31 @@ void uart_handle_intr(void) {
             cursor_pos = 0;
         }
 
-        uart_putc(c);
+        uart_putc(0, c);
 
         break;
     }
+}
+
+i32 uart_putc(u32 minor, char c) {
+    (void) minor;
+
+    if (c == '\n')
+        uart_putc(0, '\r');
+
+    while (!(REG(LSR) & LSR_THRE))
+        ;
+    REG(THR) = c;
+
+    return 0;
+}
+
+i32 uart_getc(u32 minor) {
+    (void) minor;
+
+    sem_wait(&rx_sem);
+    char c = rx_buf[rx_head];
+    rx_head++;
+    rx_head %= UART_RX_BUF_SIZE;
+    return c;
 }

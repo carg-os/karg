@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <kalloc.h>
 #include <page_alloc.h>
+#include <uart.h>
 
 void ctx_sw(usize **old_sp, usize **new_sp);
 void proc_entry(void);
@@ -34,9 +35,20 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     if (proc->pid < 0)
         return proc->pid;
     proc->flags = flags;
+
     proc->parent = parent;
     list_init_head(&proc->children);
     list_init_head(&proc->zombie_children);
+
+    for (usize i = 0; i <= PROC_MAX_FD; i++) {
+        proc->fds[i].flags = 0;
+    }
+    proc->fds[0].flags = FD_FLAG_ALLOCATED | FD_FLAG_READABLE;
+    proc->fds[1].flags = FD_FLAG_ALLOCATED | FD_FLAG_WRITABLE;
+    proc->fds[2].flags = FD_FLAG_ALLOCATED | FD_FLAG_WRITABLE;
+    proc->fds[0].dev = dev_init(0, 0);
+    proc->fds[1].dev = dev_init(0, 0);
+    proc->fds[2].dev = dev_init(0, 0);
 
     proc->state = PROC_STATE_INIT;
     timer_init(&proc->timer);

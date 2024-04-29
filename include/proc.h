@@ -1,13 +1,15 @@
 #ifndef PROC_H_
 #define PROC_H_
 
+#include <config.h>
+#include <fd.h>
 #include <list.h>
 #include <timer.h>
 #include <types.h>
 
 typedef isize pid_t;
 
-#define PROC_FLAG_KERNEL 0x1
+#define PROC_FLAG_KERNEL 0x00000001
 
 typedef enum {
     PROC_STATE_INIT,
@@ -25,9 +27,12 @@ typedef struct proc {
 
     pid_t pid;
     u32 flags;
+
     struct proc *parent;
     list_node_t children;
     list_node_t zombie_children;
+
+    fd_t fds[PROC_MAX_FD + 1];
 
     proc_state_t state;
     i32 exit_status;
