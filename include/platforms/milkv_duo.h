@@ -1,0 +1,14 @@
+#ifndef PLATFORM_H_
+#define PLATFORM_H_
+
+#define BOOT_STACK_BASE 0x84000000
+
+#define PLIC_BASE 0x70000000
+#define IRQ_UART 44
+
+#define UART_BASE 0x04140000
+#define UART_REG_SIZE 4
+
+#define TIMER_FREQ 25000000
+
+#endif // PLATFORM_H_
