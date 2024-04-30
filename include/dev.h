@@ -1,7 +1,5 @@
-#ifndef DEV_H_
-#define DEV_H_
+#pragma once
 
-#include <errno.h>
 #include <types.h>
 
 typedef u32 dev_t;
@@ -19,21 +17,5 @@ typedef struct {
     i32 (*putc)(u32 minor, char c);
 } driver_t;
 
-extern driver_t DRIVERS[];
-extern const usize NR_DRIVERS;
-
-static inline i32 dev_getc(dev_t dev) {
-    u32 major = dev_major(dev);
-    if (dev >= NR_DRIVERS || !DRIVERS[major].getc)
-        return -ENXIO;
-    return DRIVERS[dev].getc(dev_minor(dev));
-}
-
-static inline i32 dev_putc(dev_t dev, char c) {
-    u32 major = dev_major(dev);
-    if (dev >= NR_DRIVERS || !DRIVERS[major].putc)
-        return -ENXIO;
-    return DRIVERS[dev].putc(dev_minor(dev), c);
-}
-
-#endif // DEV_H_
+i32 dev_getc(dev_t dev);
+i32 dev_putc(dev_t dev, char c);

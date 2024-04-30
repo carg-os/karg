@@ -1,5 +1,4 @@
-#ifndef ERRNO_H_
-#define ERRNO_H_
+#pragma once
 
 #define EAGAIN 1
 #define EBADF 2
@@ -9,5 +8,3 @@
 #define ENOMEM 6
 #define ENOSYS 7
 #define ENXIO 8
-
-#endif // ERRNO_H_

@@ -1,5 +1,4 @@
-#ifndef FD_H_
-#define FD_H_
+#pragma once
 
 #include <dev.h>
 #include <types.h>
@@ -14,5 +13,3 @@ typedef struct {
 } fd_t;
 
 bool is_bad_fd(isize fd);
-
-#endif // FD_H_

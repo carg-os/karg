@@ -1,5 +1,4 @@
-#ifndef TRAP_H_
-#define TRAP_H_
+#pragma once
 
 #include <csr.h>
 #include <types.h>
@@ -23,5 +22,3 @@ static inline void init_trap(void) {
     void trap_entry();
     csr_write(stvec, trap_entry);
 }
-
-#endif // TRAP_H_

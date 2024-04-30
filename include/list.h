@@ -1,5 +1,4 @@
-#ifndef LIST_H_
-#define LIST_H_
+#pragma once
 
 #include <stddef.h>
 #include <types.h>
@@ -79,5 +78,3 @@ static inline void list_pop_back(list_node_t *head) {
     for (entry = list_first_entry(head, typeof(*entry), member);               \
          &entry->member != (head);                                             \
          entry = list_entry(entry->member.next, typeof(*entry), member))
-
-#endif // LIST_H_

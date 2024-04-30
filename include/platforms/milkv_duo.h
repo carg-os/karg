@@ -1,5 +1,4 @@
-#ifndef PLATFORM_H_
-#define PLATFORM_H_
+#pragma once
 
 #define BOOT_STACK_BASE 0x84000000
 
@@ -10,5 +9,3 @@
 #define UART_REG_SIZE 4
 
 #define TIMER_FREQ 25000000
-
-#endif // PLATFORM_H_

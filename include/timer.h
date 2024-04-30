@@ -1,5 +1,4 @@
-#ifndef TIMER_H_
-#define TIMER_H_
+#pragma once
 
 #include <list.h>
 #include <time.h>
@@ -20,5 +19,3 @@ void timer_wait(timer_t *timer, time_t ns, void (*callback)(void *data),
                 void *data);
 void timer_cancel(timer_t *timer);
 void timer_handle_intr(void);
-
-#endif // TIMER_H_

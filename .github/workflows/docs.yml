@@ -12,16 +12,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Check out the repository
+      uses: actions/checkout@v3
       with: 
         submodules: 'true'
-    - name: Setup Pages
+    - name: Configure GitHub Pages
       uses: actions/configure-pages@v3
-    - name: Install dependencies
+    - name: Install the dependencies
       run: sudo apt-get install doxygen
-    - name: Make Docs
-      run: make docs
-    - name: Upload artifact
+    - name: Build the documentation
+      run: doxygen
+    - name: Upload the artifact
       uses: actions/upload-pages-artifact@v1
       with:
         path: docs/html

@@ -1,5 +1,4 @@
-#ifndef TYPES_H_
-#define TYPES_H_
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,5 +15,3 @@ typedef int64_t i64;
 
 typedef size_t usize;
 typedef ptrdiff_t isize;
-
-#endif // TYPES_H_

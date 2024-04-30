@@ -1,5 +1,4 @@
-#ifndef SEM_H_
-#define SEM_H_
+#pragma once
 
 #include <list.h>
 #include <types.h>
@@ -14,5 +13,3 @@ void sem_deinit(sem_t *sem);
 void sem_wait(sem_t *sem);
 void sem_signal(sem_t *sem);
 void sem_signaln(sem_t *sem, usize n);
-
-#endif // SEM_H_

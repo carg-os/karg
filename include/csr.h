@@ -1,5 +1,4 @@
-#ifndef CSR_H_
-#define CSR_H_
+#pragma once
 
 #define csr_read(reg)                                                          \
     ({                                                                         \
@@ -19,5 +18,3 @@
 #define CSR_SIE_SEIE 0x200
 
 #define CSR_SCAUSE_INTR 0x8000000000000000
-
-#endif // CSR_H_

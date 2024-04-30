@@ -1,5 +1,4 @@
-#ifndef PROC_H_
-#define PROC_H_
+#pragma once
 
 #include <config.h>
 #include <fd.h>
@@ -51,5 +50,3 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, int argc,
 void proc_deinit(proc_t *proc);
 void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc);
 void proc_adopt(proc_t *parent, proc_t *proc);
-
-#endif // PROC_H_
