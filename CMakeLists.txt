@@ -2,6 +2,7 @@ project(karg C ASM)
 
 add_library(karg
     src/dev.c
+    src/driver.c
     src/entry.S
     src/fd.c
     src/kalloc.c

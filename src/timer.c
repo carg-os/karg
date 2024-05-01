@@ -56,7 +56,7 @@ void timer_cancel(timer_t *timer) {
     sched_timer_intr(wait_time);
 }
 
-void timer_handle_intr(void) {
+void timer_isr(void) {
     timer_t *timer = list_first_entry(&wait_queue, timer_t, node);
     list_remove_init(&timer->node);
 

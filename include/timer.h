@@ -18,4 +18,4 @@ void timer_deinit(timer_t *timer);
 void timer_wait(timer_t *timer, time_t ns, void (*callback)(void *data),
                 void *data);
 void timer_cancel(timer_t *timer);
-void timer_handle_intr(void);
+void timer_isr(void);

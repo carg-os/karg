@@ -1,25 +1,23 @@
 #include <trap.h>
 
+#include <driver.h>
 #include <errno.h>
-#include <platform.h>
 #include <plic.h>
 #include <rv.h>
 #include <syscall.h>
 #include <timer.h>
-#include <uart.h>
 
 void trap_handler(trapframe_t *frame) {
     if (frame->scause & CSR_SCAUSE_INTR) {
         switch (frame->scause & ~CSR_SCAUSE_INTR) {
         case 5:
-            timer_handle_intr();
+            timer_isr();
             break;
         case 9:
             u32 irq = plic_claim();
-            switch (irq) {
-            case IRQ_UART:
-                uart_handle_intr();
-                break;
+            for (usize i = 0; i < nr_drivers; i++) {
+                if (irq == driver_table[i]->irq && driver_table[i]->isr)
+                    driver_table[i]->isr();
             }
             plic_complete(irq);
             break;

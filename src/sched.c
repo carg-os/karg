@@ -2,11 +2,11 @@
 
 #include <config.h>
 
-proc_t *curr_proc = nullptr;
-
 static list_node_t ready_queue = LIST_HEAD_INIT(ready_queue);
 static proc_t idle_proc;
 static timer_t timer;
+
+proc_t *curr_proc = nullptr;
 
 void idle_task(void) {
     while (true) {
@@ -15,12 +15,12 @@ void idle_task(void) {
 }
 
 i32 init_sched(void) {
-    i32 res;
-    res =
+    i32 res =
         proc_init(&idle_proc, idle_task, PROC_FLAG_KERNEL, nullptr, 0, nullptr);
     if (res < 0)
         return res;
     sched_update_state(&idle_proc, PROC_STATE_READY);
+
     timer_init(&timer);
     return 0;
 }

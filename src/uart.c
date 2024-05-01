@@ -1,6 +1,7 @@
 #include <uart.h>
 
 #include <config.h>
+#include <driver.h>
 #include <platform.h>
 #include <plic.h>
 #include <sem.h>
@@ -24,15 +25,25 @@ static sem_t rx_sem;
 static char rx_buf[UART_RX_BUF_SIZE];
 static usize rx_head = 0, rx_tail = 0;
 static usize cursor_pos = 0;
+static driver_t driver = {
+    .irq = IRQ_UART,
+    .isr = uart_isr,
+    .getc = uart_getc,
+    .putc = uart_putc,
+};
 
-void init_uart(void) {
+i32 init_uart(void) {
     sem_init(&rx_sem);
+    i32 res = driver_add(&driver);
+    if (res < 0)
+        return res;
 
     plic_enable_irq(IRQ_UART);
     REG(IER) = IER_ERBFI;
+    return 0;
 }
 
-void uart_handle_intr(void) {
+void uart_isr(void) {
 #ifdef PLATFORM_MILKV_DUO
     if (REG(IIR) == 0xC7) {
         REG(USR);
