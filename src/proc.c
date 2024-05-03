@@ -59,6 +59,7 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
         return -ENOMEM;
 
     usize *usp = (usize *) ((u8 *) proc->ustack + PAGE_SIZE);
+    *--usp = 0;
     for (i32 i = 0; i < argc; i++) {
         *--usp = (usize) argv[argc - 1 - i];
     }

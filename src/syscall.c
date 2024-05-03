@@ -54,6 +54,8 @@ static isize sys_read(const trapframe_t *frame) {
         if (res < 0)
             return res;
         buf[i] = res;
+        if (res == '\n')
+            return i + 1;
     }
     return size;
 }
