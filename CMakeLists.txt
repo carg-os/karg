@@ -12,6 +12,7 @@ add_library(karg
     src/plic.c
     src/proc.c
     src/proc.S
+    src/sbi.c
     src/sched.c
     src/sem.c
     src/syscall.c

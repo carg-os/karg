@@ -8,3 +8,5 @@
 #define ENOMEM 6
 #define ENOSYS 7
 #define ENXIO 8
+#define EPERM 9
+#define ENOTSUP 10
