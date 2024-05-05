@@ -1,16 +1,34 @@
 #pragma once
 
-#include "time.h"
-#include "types.h"
+#include <time.h>
+#include <types.h>
+
+typedef struct {
+    i32 err;
+    isize val;
+} sbi_res_t;
+
+sbi_res_t sbi_ecall(i32 eid, i32 fid, ...);
+i32 sbi_map_err(i32 err);
 
 #define EID_TIME 0x54494D45
+
+static inline i32 sbi_set_timer(time_t time) {
+    return sbi_map_err(sbi_ecall(EID_TIME, 0, time).err);
+}
+
 #define EID_SRST 0x53525354
 
-isize sbi_ecall(i32 eid, i32 fid, ...);
+typedef enum {
+    SBI_REBOOT_TYPE_SHUTDOWN = 0,
+    SBI_REBOOT_TYPE_REBOOT = 1,
+} sbi_reboot_type_t;
 
-static inline i32 sbi_set_timer(time_t stime_value) {
-    return sbi_ecall(EID_TIME, 0, stime_value);
-}
-static inline i32 sbi_system_reset(uint32_t reset_type, uint32_t reset_reason) {
-    return sbi_ecall(EID_SRST, 0, reset_type, reset_reason);
+typedef enum {
+    SBI_REBOOT_REASON_NONE = 0,
+} sbi_reboot_reason_t;
+
+static inline i32 sbi_reboot(sbi_reboot_type_t type,
+                             sbi_reboot_reason_t reason) {
+    return sbi_map_err(sbi_ecall(EID_SRST, 0, type, reason).err);
 }

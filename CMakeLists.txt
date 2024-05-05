@@ -24,6 +24,11 @@ add_library(karg
 
 set_property(TARGET karg PROPERTY C_STANDARD 23)
 set_property(TARGET karg PROPERTY COMPILE_WARNING_AS_ERROR ON)
-target_compile_options(karg PRIVATE -ffreestanding -mcmodel=medany -Wall -Wextra)
+target_compile_options(karg PRIVATE
+    -ffreestanding
+    -mcmodel=medany
+    -Wall
+    -Wextra
+)
 target_include_directories(karg PRIVATE include)
 target_compile_definitions(karg PRIVATE PLATFORM_${PLATFORM})

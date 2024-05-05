@@ -8,11 +8,9 @@
 
 static list_node_t wait_queue = LIST_HEAD_INIT(wait_queue);
 
-static void sched_timer_intr(time_t time) { sbi_set_timer(time); }
-
 void init_timer(void) {
     csr_set_bits(sie, CSR_SIE_STIE);
-    sched_timer_intr(TIME_MAX);
+    sbi_set_timer(TIME_MAX);
 }
 
 void timer_init(timer_t *timer) { list_init_head(&timer->node); }
@@ -30,14 +28,14 @@ void timer_wait(timer_t *timer, time_t ns, void (*callback)(void *data),
         if (timer->time < entry->time) {
             list_insert(&entry->node, &timer->node);
             if (list_is_front(&wait_queue, &timer->node))
-                sched_timer_intr(timer->time);
+                sbi_set_timer(timer->time);
             return;
         }
     }
 
     list_push_back(&wait_queue, &timer->node);
     if (list_is_front(&wait_queue, &timer->node))
-        sched_timer_intr(timer->time);
+        sbi_set_timer(timer->time);
 }
 
 void timer_cancel(timer_t *timer) {
@@ -48,7 +46,7 @@ void timer_cancel(timer_t *timer) {
     time_t wait_time = TIME_MAX;
     if (!list_empty(&wait_queue))
         wait_time = list_first_entry(&wait_queue, timer_t, node)->time;
-    sched_timer_intr(wait_time);
+    sbi_set_timer(wait_time);
 }
 
 void timer_isr(void) {
@@ -58,7 +56,7 @@ void timer_isr(void) {
     time_t wait_time = TIME_MAX;
     if (!list_empty(&wait_queue))
         wait_time = list_first_entry(&wait_queue, timer_t, node)->time;
-    sched_timer_intr(wait_time);
+    sbi_set_timer(wait_time);
 
     timer->callback(timer->data);
 }
