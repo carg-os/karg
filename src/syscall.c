@@ -150,7 +150,14 @@ static isize sys_wait(const trapframe_t *frame) {
 typedef enum {
     REBOOT_TYPE_REBOOT = 0,
     REBOOT_TYPE_SHUTDOWN = 1,
+    REBOOT_TYPE_HANG = 2,
 } reboot_type_t;
+
+[[noreturn]] void hang(void) {
+    while (true) {
+        asm volatile("wfi");
+    }
+}
 
 static isize sys_reboot(const trapframe_t *frame) {
     reboot_type_t type = frame->a0;
@@ -159,6 +166,8 @@ static isize sys_reboot(const trapframe_t *frame) {
         return sbi_reboot(SBI_REBOOT_TYPE_REBOOT, SBI_REBOOT_REASON_NONE);
     case REBOOT_TYPE_SHUTDOWN:
         return sbi_reboot(SBI_REBOOT_TYPE_SHUTDOWN, SBI_REBOOT_REASON_NONE);
+    case REBOOT_TYPE_HANG:
+        hang();
     default:
         return -EINVAL;
     }
