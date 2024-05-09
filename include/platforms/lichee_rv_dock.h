@@ -1,0 +1,11 @@
+#pragma once
+
+#define BOOT_STACK_BASE 0x80000000
+
+#define PLIC_BASE 0x10000000
+#define IRQ_UART 18
+
+#define UART_BASE 0x02500000
+#define UART_REG_SIZE 4
+
+#define TIMER_FREQ 24000000

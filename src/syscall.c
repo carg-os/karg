@@ -154,9 +154,8 @@ typedef enum {
 } reboot_type_t;
 
 [[noreturn]] void hang(void) {
-    while (true) {
-        asm volatile("wfi");
-    }
+    while (true)
+        ;
 }
 
 static isize sys_reboot(const trapframe_t *frame) {
