@@ -1,3 +1,5 @@
+#include <de.h>
+#include <hdmi.h>
 #include <kalloc.h>
 #include <kprintf.h>
 #include <page_alloc.h>
@@ -35,8 +37,22 @@ static void init_subsystems(void) {
     init_sched();
 }
 
+static u32 framebuffer[1600 * 900];
+
 [[noreturn]] void kmain(void) {
     init_subsystems();
+
+    int width = 1600;
+    int height = 900;
+    hdmi_resolution_id_t id = hdmi_best_match(
+        width, height); // choose from available screen resolutions
+    hdmi_init(id);
+    de_init(width, height, hdmi_get_screen_width(), hdmi_get_screen_height());
+    de_set_active_framebuffer(framebuffer);
+
+    for (int i = 0; i < 1600 * 900; i++) {
+        framebuffer[i] = 0xFF00FF00;
+    }
 
     proc_t *init_proc = (proc_t *) kmalloc(sizeof(proc_t));
     proc_init(init_proc, init, 0, nullptr, 0, nullptr);

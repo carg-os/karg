@@ -1,10 +1,13 @@
 project(karg C ASM)
 
 add_library(karg
+    src/ccu.c
+    src/de.c
     src/dev.c
     src/driver.c
     src/entry.S
     src/fd.c
+    src/hdmi.c
     src/kalloc.c
     src/kmain.c
     src/kprintf.c
