@@ -3,45 +3,36 @@ name: Docs CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v3
-      with: 
-        submodules: 'true'
-    - name: Configure GitHub Pages
-      uses: actions/configure-pages@v3
-    - name: Install the dependencies
-      run: sudo apt-get install doxygen
-    - name: Build the documentation
-      run: doxygen
-    - name: Upload the artifact
-      uses: actions/upload-pages-artifact@v1
-      with:
-        path: docs/html
+      - name: Check out the repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v3
+      - name: Install dependencies
+        run: sudo apt-get install doxygen
+      - name: Build documentations
+        run: doxygen
+      - name: Upload the artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs/html
 
   deploy:
-
     runs-on: ubuntu-latest
-
     needs: build
-
     permissions:
-        pages: write
-        id-token: write
-
+      pages: write
+      id-token: write
     environment:
-        name: github-pages
-        url: ${{ steps.deployment.outputs.page_url }}
-
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-        - name: Deploy to GitHub Pages
-          id: deployment
-          uses: actions/deploy-pages@v1
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
