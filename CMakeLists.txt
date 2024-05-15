@@ -1,4 +1,9 @@
+cmake_minimum_required(VERSION 3.29)
 project(karg C ASM)
+
+if (NOT PLATFORM)
+    set (PLATFORM VIRT)
+endif()
 
 add_library(karg
     src/ccu.c
