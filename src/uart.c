@@ -2,6 +2,8 @@
 
 #include <config.h>
 #include <driver.h>
+#include <font.h>
+#include <mem.h>
 #include <platform.h>
 #include <plic.h>
 #include <sem.h>
@@ -95,11 +97,120 @@ void uart_isr(void) {
     }
 }
 
+typedef enum {
+    NORMAL,
+    ESCAPE,
+    NUM,
+} state_t;
+
+extern u32 framebuffer[1600 * 900];
+static i32 pos = 0;
+static i32 line = 0;
+static state_t state = NORMAL;
+static i32 num = 0;
+static u32 fg = 0xFFF2EFDE, bg = 0xFF202020;
+
 i32 uart_putc(u32 minor, char c) {
     (void) minor;
 
     if (c == '\n')
         uart_putc(0, '\r');
+
+    if (state == NORMAL) {
+        if (c == '\n') {
+            line++;
+            if (line > 55) {
+                memcpy(framebuffer, framebuffer + 1600 * 16, 1600 * 880 * 4);
+                for (i32 i = 1600 * 880; i < 1600 * 900; i++) {
+                    framebuffer[i] = 0xFF202020;
+                }
+                asm volatile(".long 0x0010000B");
+                line--;
+            }
+        } else if (c == '\r') {
+            for (i32 i = 0; i < 16; i++) {
+                for (i32 j = 0; j < 8; j++) {
+                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
+                        0xFF202020;
+                }
+            }
+            asm volatile(".long 0x0010000B");
+            pos = 0;
+        } else if (c == '\x1B') {
+            state = ESCAPE;
+        } else if (c == '\b') {
+            for (i32 i = 0; i < 16; i++) {
+                for (i32 j = 0; j < 8; j++) {
+                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
+                        0xFF202020;
+                }
+            }
+            pos--;
+            for (i32 i = 0; i < 16; i++) {
+                for (i32 j = 0; j < 8; j++) {
+                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
+                        0xFFF2EFDE;
+                }
+            }
+            asm volatile(".long 0x0010000B");
+        } else {
+            for (i32 i = 0; i < 16; i++) {
+                for (i32 j = 0; j < 8; j++) {
+                    if (font[(u8) c][i] & (1 << j)) {
+                        framebuffer[1600 * (i + 16 * line) + j + 8 * pos] = fg;
+                    } else {
+                        framebuffer[1600 * (i + 16 * line) + j + 8 * pos] = bg;
+                    }
+                }
+            }
+            pos++;
+            for (i32 i = 0; i < 16; i++) {
+                for (i32 j = 0; j < 8; j++) {
+                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
+                        0xFFF2EFDE;
+                }
+            }
+            asm volatile(".long 0x0010000B");
+        }
+    } else if (state == ESCAPE) {
+        if ('0' <= c && c <= '9') {
+            num = c - '0';
+            state = NUM;
+        }
+    } else {
+        if ('0' <= c && c <= '9') {
+            num = num * 10 + c - '0';
+        } else {
+            switch (num) {
+            case 0:
+                fg = 0xFFF2EFDE;
+                bg = 0xFF202020;
+                break;
+            case 31:
+                fg = 0xFFDE382B;
+                break;
+            case 33:
+                fg = 0xFFFFC706;
+                break;
+            case 36:
+                fg = 0xFF2CB5E9;
+                break;
+            case 90:
+                fg = 0xFF808080;
+                break;
+            }
+            if (c == 'm') {
+                state = NORMAL;
+            } else if (c == 'J') {
+                for (i32 i = 0; i < 1600 * 900; i++)
+                    framebuffer[i] = 0xFF202020;
+                line = 0;
+                state = NORMAL;
+            } else {
+                state = ESCAPE;
+            }
+        }
+    }
 
     while (!(REG(LSR) & LSR_THRE))
         ;

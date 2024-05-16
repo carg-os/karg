@@ -6,6 +6,7 @@
  */
 
 #include "de.h"
+#include "assert.h"
 #include "timer.h"
 
 // Display Engine 2.0
@@ -162,6 +163,8 @@ void de_set_active_framebuffer(void *addr) {
     module.de_ui_ch1->regs.layer[0].attr_ctrl &= ~(1 << 4); // disable fill
     uintptr_t full_address = (uintptr_t) addr;
     uint32_t low_addr = full_address & 0xffffffff;
+    assert((uintptr_t) low_addr ==
+           full_address); // confirm address fits in 32 bits
     module.de_ui_ch1->regs.layer[0].top_laddr = low_addr;
     timer_delay_ms(10); // resync delay
 }

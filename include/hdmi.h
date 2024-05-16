@@ -1,6 +1,8 @@
 #ifndef HDMI_H
 #define HDMI_H
 
+#include <types.h>
+
 /*
  * Functions for controlling display hardware.
  *
@@ -39,7 +41,7 @@ void hdmi_init(hdmi_resolution_id_t res);
  *
  * @return      resolution id chosen from enum above
  */
-hdmi_resolution_id_t hdmi_best_match(int width, int height);
+hdmi_resolution_id_t hdmi_best_match(u32 width, u32 height);
 
 /*
  * `hdmi_get_screen_width`
@@ -48,7 +50,7 @@ hdmi_resolution_id_t hdmi_best_match(int width, int height);
  *
  * @return    the width in pixels
  */
-int hdmi_get_screen_width(void);
+i32 hdmi_get_screen_width(void);
 
 /*
  * `hdmi_get_screen_height`
@@ -57,6 +59,6 @@ int hdmi_get_screen_width(void);
  *
  * @return    the height in pixels
  */
-int hdmi_get_screen_height(void);
+i32 hdmi_get_screen_height(void);
 
 #endif

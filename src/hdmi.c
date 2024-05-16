@@ -142,14 +142,14 @@ static const struct display_timing avail_resolutions[] = {
     {HDMI_INVALID, {0}, {0}, 0, 0, 0, 0, 0, 0},
 };
 
+static bool select_resolution(hdmi_resolution_id_t id);
 static void enable_display_clocks(void);
 static void hdmi_controller_init(void);
 static void tcon_init(void);
 static i32 sun20i_d1_hdmi_phy_config(void);
 
 void hdmi_init(hdmi_resolution_id_t id) {
-    (void) id;
-
+    select_resolution(id);
     enable_display_clocks();
     hdmi_controller_init();
     tcon_init();
@@ -165,13 +165,23 @@ void hdmi_init(hdmi_resolution_id_t id) {
     }
 }
 
-hdmi_resolution_id_t hdmi_best_match(i32 width, i32 height) {
+static bool select_resolution(hdmi_resolution_id_t id) {
+    for (i32 i = 0; avail_resolutions[i].id != HDMI_INVALID; i++) {
+        if (avail_resolutions[i].id == id) {
+            module.config = avail_resolutions[i];
+            return true;
+        }
+    }
+    return false;
+}
+
+hdmi_resolution_id_t hdmi_best_match(u32 width, u32 height) {
     hdmi_resolution_id_t chosen = HDMI_INVALID;
     // resolutions listed in order from largest to smallest, choose "tightest"
     // (i.e. smallest that fits)
     for (i32 i = 0; avail_resolutions[i].id != HDMI_INVALID; i++) {
-        if (width <= (i32) avail_resolutions[i].horiz.pixels &&
-            height <= (i32) avail_resolutions[i].vert.pixels) {
+        if (width <= avail_resolutions[i].horiz.pixels &&
+            height <= avail_resolutions[i].vert.pixels) {
             chosen = avail_resolutions[i].id;
         }
     }
@@ -333,9 +343,8 @@ static i32 sun20i_d1_hdmi_phy_enable(void) {
             break;
         }
     }
-    if ((i == AW_PHY_TIMEOUT) && !status) {
+    if ((i == AW_PHY_TIMEOUT) && !status)
         return -1;
-    }
 
     phy_base->phy_ctl0.bits.enbi = 0xF;
     for (i = 0; i < AW_PHY_TIMEOUT; i++) {
@@ -345,9 +354,8 @@ static i32 sun20i_d1_hdmi_phy_enable(void) {
             break;
         }
     }
-    if ((i == AW_PHY_TIMEOUT) && !status) {
+    if ((i == AW_PHY_TIMEOUT) && !status)
         return -1;
-    }
 
     phy_base->phy_ctl0.bits.enck = 1;
     phy_base->phy_ctl5.bits.enp2s = 0xF;
@@ -362,9 +370,8 @@ static i32 sun20i_d1_hdmi_phy_enable(void) {
             break;
         }
     }
-    if ((i == AW_PHY_TIMEOUT) && !status) {
+    if ((i == AW_PHY_TIMEOUT) && !status)
         return -1;
-    }
 
     return 0;
 }

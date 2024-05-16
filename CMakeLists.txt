@@ -12,6 +12,7 @@ add_library(karg
     src/driver.c
     src/entry.S
     src/fd.c
+    src/font.c
     src/hdmi.c
     src/kalloc.c
     src/kmain.c

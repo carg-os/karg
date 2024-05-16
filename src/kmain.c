@@ -37,7 +37,7 @@ static void init_subsystems(void) {
     init_sched();
 }
 
-static u32 framebuffer[1600 * 900];
+u32 framebuffer[1600 * 900];
 
 [[noreturn]] void kmain(void) {
     init_subsystems();
@@ -51,7 +51,7 @@ static u32 framebuffer[1600 * 900];
     de_set_active_framebuffer(framebuffer);
 
     for (int i = 0; i < 1600 * 900; i++) {
-        framebuffer[i] = 0xFF00FF00;
+        framebuffer[i] = 0xFF202020;
     }
 
     proc_t *init_proc = (proc_t *) kmalloc(sizeof(proc_t));
