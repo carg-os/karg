@@ -1,6 +1,7 @@
 #include <uart.h>
 
 #include <config.h>
+#include <de.h>
 #include <driver.h>
 #include <font.h>
 #include <mem.h>
@@ -103,12 +104,18 @@ typedef enum {
     NUM,
 } state_t;
 
-extern u32 framebuffer[1600 * 900];
+extern u32 framebuffer[1600 * 900 * 2];
 static i32 pos = 0;
 static i32 line = 0;
 static state_t state = NORMAL;
 static i32 num = 0;
 static u32 fg = 0xFFF2EFDE, bg = 0xFF202020;
+
+static void write_fb(i32 i, i32 j, u32 color) {
+    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] = color;
+    if (line >= 57)
+        framebuffer[1600 * (i + 16 * (line - 57)) + j + 8 * pos] = color;
+}
 
 i32 uart_putc(u32 minor, char c) {
     (void) minor;
@@ -119,19 +126,38 @@ i32 uart_putc(u32 minor, char c) {
     if (state == NORMAL) {
         if (c == '\n') {
             line++;
-            if (line > 55) {
-                memcpy(framebuffer, framebuffer + 1600 * 16, 1600 * 880 * 4);
-                for (i32 i = 1600 * 880; i < 1600 * 900; i++) {
-                    framebuffer[i] = 0xFF202020;
+            if (line == 112) {
+                de_set_active_framebuffer(framebuffer);
+                line = 55;
+                for (i32 i = 0; i < 4; i++) {
+                    for (i32 j = 0; j < 1600; j++) {
+                        framebuffer[1600 * (i + 16 * (line + 1)) + j] =
+                            0xFF202020;
+                    }
                 }
-                asm volatile(".long 0x0010000B");
-                line--;
+            } else if (line > 55) {
+                de_set_active_framebuffer(framebuffer +
+                                          1600 * 16 * (line - 55));
+                for (i32 i = 0; i < 4; i++) {
+                    for (i32 j = 0; j < 1600; j++) {
+                        framebuffer[1600 * (i + 16 * (line + 1)) + j] =
+                            0xFF202020;
+                    }
+                }
             }
+            for (; pos < 200; pos++) {
+                for (i32 i = 0; i < 16; i++) {
+                    for (i32 j = 0; j < 8; j++) {
+                        write_fb(i, j, 0xFF202020);
+                    }
+                }
+            }
+            asm volatile(".long 0x0010000B");
+            pos = 0;
         } else if (c == '\r') {
             for (i32 i = 0; i < 16; i++) {
                 for (i32 j = 0; j < 8; j++) {
-                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
-                        0xFF202020;
+                    write_fb(i, j, 0xFF202020);
                 }
             }
             asm volatile(".long 0x0010000B");
@@ -141,15 +167,13 @@ i32 uart_putc(u32 minor, char c) {
         } else if (c == '\b') {
             for (i32 i = 0; i < 16; i++) {
                 for (i32 j = 0; j < 8; j++) {
-                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
-                        0xFF202020;
+                    write_fb(i, j, 0xFF202020);
                 }
             }
             pos--;
             for (i32 i = 0; i < 16; i++) {
                 for (i32 j = 0; j < 8; j++) {
-                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
-                        0xFFF2EFDE;
+                    write_fb(i, j, 0xFFF2EFDE);
                 }
             }
             asm volatile(".long 0x0010000B");
@@ -157,17 +181,16 @@ i32 uart_putc(u32 minor, char c) {
             for (i32 i = 0; i < 16; i++) {
                 for (i32 j = 0; j < 8; j++) {
                     if (font[(u8) c][i] & (1 << j)) {
-                        framebuffer[1600 * (i + 16 * line) + j + 8 * pos] = fg;
+                        write_fb(i, j, fg);
                     } else {
-                        framebuffer[1600 * (i + 16 * line) + j + 8 * pos] = bg;
+                        write_fb(i, j, bg);
                     }
                 }
             }
             pos++;
             for (i32 i = 0; i < 16; i++) {
                 for (i32 j = 0; j < 8; j++) {
-                    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] =
-                        0xFFF2EFDE;
+                    write_fb(i, j, 0xFFF2EFDE);
                 }
             }
             asm volatile(".long 0x0010000B");
@@ -202,6 +225,7 @@ i32 uart_putc(u32 minor, char c) {
             if (c == 'm') {
                 state = NORMAL;
             } else if (c == 'J') {
+                de_set_active_framebuffer(framebuffer);
                 for (i32 i = 0; i < 1600 * 900; i++)
                     framebuffer[i] = 0xFF202020;
                 line = 0;
@@ -212,9 +236,11 @@ i32 uart_putc(u32 minor, char c) {
         }
     }
 
-    while (!(REG(LSR) & LSR_THRE))
-        ;
-    REG(THR) = c;
+    /*
+        while (!(REG(LSR) & LSR_THRE))
+            ;
+        REG(THR) = c;
+    */
 
     return 0;
 }

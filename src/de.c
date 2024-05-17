@@ -154,11 +154,6 @@ void de_init(int fb_width, int fb_height, int screen_width, int screen_height) {
     de_config_ui_ch1(fb_size, full_screen);
 }
 
-static void timer_delay_ms(i32 ms) {
-    for (i32 i = 0; i < ms * 1000000; i++)
-        ;
-}
-
 void de_set_active_framebuffer(void *addr) {
     module.de_ui_ch1->regs.layer[0].attr_ctrl &= ~(1 << 4); // disable fill
     uintptr_t full_address = (uintptr_t) addr;
@@ -166,7 +161,6 @@ void de_set_active_framebuffer(void *addr) {
     assert((uintptr_t) low_addr ==
            full_address); // confirm address fits in 32 bits
     module.de_ui_ch1->regs.layer[0].top_laddr = low_addr;
-    timer_delay_ms(10); // resync delay
 }
 
 // DE Mixer block is a pipeline: framebuffer(s) -> overlay channel(s) ->

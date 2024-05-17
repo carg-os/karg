@@ -37,7 +37,7 @@ static void init_subsystems(void) {
     init_sched();
 }
 
-u32 framebuffer[1600 * 900];
+u32 framebuffer[1600 * 900 * 2];
 
 [[noreturn]] void kmain(void) {
     init_subsystems();
