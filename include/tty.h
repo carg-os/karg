@@ -2,4 +2,4 @@
 
 #include <types.h>
 
-i32 init_uart(void);
+i32 init_tty(void);

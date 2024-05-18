@@ -1,10 +1,8 @@
 #include <uart.h>
 
 #include <config.h>
-#include <de.h>
+#include <dev.h>
 #include <driver.h>
-#include <font.h>
-#include <mem.h>
 #include <platform.h>
 #include <plic.h>
 #include <sem.h>
@@ -16,13 +14,14 @@
 #define IIR 2
 #define FCR 2
 #define LSR 5
-#ifdef PLATFORM_MILKV_DUO
-#define USR 31
-#endif
 
 #define IER_ERBFI 0x01
 
 #define LSR_THRE 0x20
+
+void uart_isr(void);
+i32 uart_getc(u32 minor);
+i32 uart_putc(u32 minor, char c);
 
 static sem_t rx_sem;
 static char rx_buf[UART_RX_BUF_SIZE];
@@ -47,13 +46,6 @@ i32 init_uart(void) {
 }
 
 void uart_isr(void) {
-#ifdef PLATFORM_MILKV_DUO
-    if (REG(IIR) == 0xC7) {
-        REG(USR);
-        return;
-    }
-#endif
-
     char c = REG(RBR);
 
     switch (c) {
@@ -76,9 +68,9 @@ void uart_isr(void) {
 
             cursor_pos--;
 
-            uart_putc(0, '\b');
-            uart_putc(0, ' ');
-            uart_putc(0, '\b');
+            dev_putc(dev_init(0, 0), '\b');
+            dev_putc(dev_init(0, 0), ' ');
+            dev_putc(dev_init(0, 0), '\b');
         }
         break;
     default:
@@ -92,155 +84,21 @@ void uart_isr(void) {
             cursor_pos = 0;
         }
 
-        uart_putc(0, c);
+        dev_putc(dev_init(0, 0), c);
 
         break;
     }
-}
-
-typedef enum {
-    NORMAL,
-    ESCAPE,
-    NUM,
-} state_t;
-
-extern u32 framebuffer[1600 * 900 * 2];
-static i32 pos = 0;
-static i32 line = 0;
-static state_t state = NORMAL;
-static i32 num = 0;
-static u32 fg = 0xFFF2EFDE, bg = 0xFF202020;
-
-static void write_fb(i32 i, i32 j, u32 color) {
-    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] = color;
-    if (line >= 57)
-        framebuffer[1600 * (i + 16 * (line - 57)) + j + 8 * pos] = color;
 }
 
 i32 uart_putc(u32 minor, char c) {
     (void) minor;
 
     if (c == '\n')
-        uart_putc(0, '\r');
+        dev_putc(dev_init(0, 0), '\r');
 
-    if (state == NORMAL) {
-        if (c == '\n') {
-            line++;
-            if (line == 112) {
-                de_set_active_framebuffer(framebuffer);
-                line = 55;
-                for (i32 i = 0; i < 4; i++) {
-                    for (i32 j = 0; j < 1600; j++) {
-                        framebuffer[1600 * (i + 16 * (line + 1)) + j] =
-                            0xFF202020;
-                    }
-                }
-            } else if (line > 55) {
-                de_set_active_framebuffer(framebuffer +
-                                          1600 * 16 * (line - 55));
-                for (i32 i = 0; i < 4; i++) {
-                    for (i32 j = 0; j < 1600; j++) {
-                        framebuffer[1600 * (i + 16 * (line + 1)) + j] =
-                            0xFF202020;
-                    }
-                }
-            }
-            for (; pos < 200; pos++) {
-                for (i32 i = 0; i < 16; i++) {
-                    for (i32 j = 0; j < 8; j++) {
-                        write_fb(i, j, 0xFF202020);
-                    }
-                }
-            }
-            asm volatile(".long 0x0010000B");
-            pos = 0;
-        } else if (c == '\r') {
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFF202020);
-                }
-            }
-            asm volatile(".long 0x0010000B");
-            pos = 0;
-        } else if (c == '\x1B') {
-            state = ESCAPE;
-        } else if (c == '\b') {
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFF202020);
-                }
-            }
-            pos--;
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFFF2EFDE);
-                }
-            }
-            asm volatile(".long 0x0010000B");
-        } else {
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    if (font[(u8) c][i] & (1 << j)) {
-                        write_fb(i, j, fg);
-                    } else {
-                        write_fb(i, j, bg);
-                    }
-                }
-            }
-            pos++;
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFFF2EFDE);
-                }
-            }
-            asm volatile(".long 0x0010000B");
-        }
-    } else if (state == ESCAPE) {
-        if ('0' <= c && c <= '9') {
-            num = c - '0';
-            state = NUM;
-        }
-    } else {
-        if ('0' <= c && c <= '9') {
-            num = num * 10 + c - '0';
-        } else {
-            switch (num) {
-            case 0:
-                fg = 0xFFF2EFDE;
-                bg = 0xFF202020;
-                break;
-            case 31:
-                fg = 0xFFDE382B;
-                break;
-            case 33:
-                fg = 0xFFFFC706;
-                break;
-            case 36:
-                fg = 0xFF2CB5E9;
-                break;
-            case 90:
-                fg = 0xFF808080;
-                break;
-            }
-            if (c == 'm') {
-                state = NORMAL;
-            } else if (c == 'J') {
-                de_set_active_framebuffer(framebuffer);
-                for (i32 i = 0; i < 1600 * 900; i++)
-                    framebuffer[i] = 0xFF202020;
-                line = 0;
-                state = NORMAL;
-            } else {
-                state = ESCAPE;
-            }
-        }
-    }
-
-    /*
-        while (!(REG(LSR) & LSR_THRE))
-            ;
-        REG(THR) = c;
-    */
+    while (!(REG(LSR) & LSR_THRE))
+        ;
+    REG(THR) = c;
 
     return 0;
 }

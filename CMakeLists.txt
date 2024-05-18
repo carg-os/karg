@@ -11,6 +11,7 @@ add_library(karg
     src/dev.c
     src/driver.c
     src/entry.S
+    src/fb.c
     src/fd.c
     src/font.c
     src/hdmi.c
@@ -28,6 +29,7 @@ add_library(karg
     src/timer.c
     src/trap.c
     src/trap.S
+    src/tty.c
     src/uart.c
 )
 
