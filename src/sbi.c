@@ -2,7 +2,7 @@
 #include <types.h>
 
 typedef struct {
-    i32 err;
+    isize err;
     isize val;
 } sbi_res_t;
 
@@ -35,7 +35,7 @@ sbi_res_t sbi_ecall(i32 eid, i32 fid, usize arg0, usize arg1, usize arg2,
 #define SBI_ERR_ALREADY_STARTED -7
 #define SBI_ERR_ALREADY_STOPPED -8
 
-i32 sbi_map_err(i32 err) {
+i32 sbi_map_err(isize err) {
     switch (err) {
     case SBI_SUCCESS:
         return 0;

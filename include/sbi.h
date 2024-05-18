@@ -4,12 +4,12 @@
 #include <types.h>
 
 typedef struct {
-    i32 err;
+    isize err;
     isize val;
 } sbi_res_t;
 
 sbi_res_t sbi_ecall(i32 eid, i32 fid, ...);
-i32 sbi_map_err(i32 err);
+i32 sbi_map_err(isize err);
 
 #define EID_TIME 0x54494D45
 

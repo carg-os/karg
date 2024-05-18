@@ -6,7 +6,7 @@
 #include <timer.h>
 #include <types.h>
 
-typedef isize pid_t;
+typedef i32 pid_t;
 
 #define PROC_FLAG_KERNEL 0x00000001
 

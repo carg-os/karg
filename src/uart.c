@@ -35,8 +35,10 @@ static driver_t driver = {
 };
 
 i32 init_uart(void) {
+    i32 res;
+
     sem_init(&rx_sem);
-    i32 res = driver_add(&driver);
+    res = driver_add(&driver);
     if (res < 0)
         return res;
 
@@ -92,9 +94,13 @@ void uart_isr(void) {
 
 i32 uart_putc(u32 minor, char c) {
     (void) minor;
+    i32 res;
 
-    if (c == '\n')
-        dev_putc(dev_init(0, 0), '\r');
+    if (c == '\n') {
+        res = dev_putc(dev_init(0, 0), '\r');
+        if (res < 0)
+            return res;
+    }
 
     while (!(REG(LSR) & LSR_THRE))
         ;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <csr.h>
 #include <types.h>
 
 typedef struct {
@@ -18,7 +17,4 @@ typedef struct {
     usize a7;
 } trapframe_t;
 
-static inline void init_trap(void) {
-    void trap_entry();
-    csr_write(stvec, trap_entry);
-}
+i32 init_trap(void);
