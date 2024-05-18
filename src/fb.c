@@ -14,7 +14,8 @@ typedef enum {
 i32 fb_putc(u32 minor, char c);
 
 static driver_t driver = {
-    .irq = 0,
+    .nr_devs = 1,
+    .irqs = nullptr,
     .isr = nullptr,
     .getc = nullptr,
     .putc = fb_putc,

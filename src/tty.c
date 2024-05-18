@@ -9,7 +9,8 @@ i32 tty_getc(u32 minor);
 i32 tty_putc(u32 minor, char c);
 
 static driver_t driver = {
-    .irq = 0,
+    .nr_devs = 1,
+    .irqs = nullptr,
     .isr = nullptr,
     .getc = tty_getc,
     .putc = tty_putc,

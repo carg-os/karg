@@ -4,8 +4,10 @@
 #include <types.h>
 
 typedef struct {
-    irq_t irq;
-    void (*isr)(void);
+    u32 nr_devs;
+    const irq_t *irqs;
+
+    void (*isr)(u32 minor);
     i32 (*getc)(u32 minor);
     i32 (*putc)(u32 minor, char c);
 } driver_t;

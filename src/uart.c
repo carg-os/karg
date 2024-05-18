@@ -7,7 +7,7 @@
 #include <plic.h>
 #include <sem.h>
 
-#define REG(reg) *((volatile u8 *) UART_BASE + UART_REG_SIZE * (reg))
+#define REG(reg) *((volatile u8 *) UART_BASE0 + UART_REG_SIZE * (reg))
 #define THR 0
 #define RBR 0
 #define IER 1
@@ -19,7 +19,7 @@
 
 #define LSR_THRE 0x20
 
-void uart_isr(void);
+void uart_isr(u32 minor);
 i32 uart_getc(u32 minor);
 i32 uart_putc(u32 minor, char c);
 
@@ -27,8 +27,12 @@ static sem_t rx_sem;
 static char rx_buf[UART_RX_BUF_SIZE];
 static usize rx_head = 0, rx_tail = 0;
 static usize cursor_pos = 0;
+static irq_t irqs[] = {
+    UART_IRQ0,
+};
 static driver_t driver = {
-    .irq = IRQ_UART,
+    .nr_devs = 1,
+    .irqs = irqs,
     .isr = uart_isr,
     .getc = uart_getc,
     .putc = uart_putc,
@@ -42,12 +46,13 @@ i32 init_uart(void) {
     if (res < 0)
         return res;
 
-    plic_enable_irq(IRQ_UART);
+    plic_enable_irq(UART_IRQ0);
     REG(IER) = IER_ERBFI;
     return 0;
 }
 
-void uart_isr(void) {
+void uart_isr(u32 minor) {
+    (void) minor;
     char c = REG(RBR);
 
     switch (c) {
