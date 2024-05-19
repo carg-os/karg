@@ -110,7 +110,7 @@ i32 fb_putc(u32 minor, char c) {
         } else {
             for (i32 i = 0; i < 16; i++) {
                 for (i32 j = 0; j < 8; j++) {
-                    if (font[(u8) c][i] & (1 << j)) {
+                    if (font[(u8) c][i] & (1 << (7 - j))) {
                         write_fb(i, j, fg);
                     } else {
                         write_fb(i, j, bg);
