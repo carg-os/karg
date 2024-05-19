@@ -9,3 +9,9 @@
 #define UART_IRQ0 18
 
 #define TIMER_FREQ 24000000
+
+#if !defined(__ASSEMBLER__)
+#include <types.h>
+
+i32 init_platform(void);
+#endif

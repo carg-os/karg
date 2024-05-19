@@ -4,12 +4,9 @@
 
 typedef u32 dev_t;
 
-static inline dev_t dev_init(u32 major, u32 minor) {
-    return major << 20 | minor;
-}
-
-static inline u32 dev_major(dev_t dev) { return dev >> 20; }
-static inline u32 dev_minor(dev_t dev) { return dev & 0xFFFFF; }
+#define DEV_INIT(major, minor) (major << 20 | minor)
+#define DEV_MAJOR(dev) (dev >> 20)
+#define DEV_MINOR(dev) (dev & 0xFFFFF)
 
 i32 dev_getc(dev_t dev);
 i32 dev_putc(dev_t dev, char c);

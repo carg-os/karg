@@ -14,6 +14,7 @@
 #define IIR 2
 #define FCR 2
 #define LSR 5
+#define USR 31
 
 #define IER_ERBFI 0x01
 
@@ -39,10 +40,8 @@ static driver_t driver = {
 };
 
 i32 init_uart(void) {
-    i32 res;
-
     sem_init(&rx_sem);
-    res = driver_add(&driver);
+    i32 res = driver_add(&driver);
     if (res < 0)
         return res;
 
@@ -52,6 +51,11 @@ i32 init_uart(void) {
 }
 
 void uart_isr(u32 minor) {
+    if (REG(IIR) == 0xC7) {
+        REG(USR);
+        return;
+    }
+
     (void) minor;
     char c = REG(RBR);
 
@@ -75,9 +79,9 @@ void uart_isr(u32 minor) {
 
             cursor_pos--;
 
-            dev_putc(dev_init(0, 0), '\b');
-            dev_putc(dev_init(0, 0), ' ');
-            dev_putc(dev_init(0, 0), '\b');
+            dev_putc(DEV_INIT(0, 0), '\b');
+            dev_putc(DEV_INIT(0, 0), ' ');
+            dev_putc(DEV_INIT(0, 0), '\b');
         }
         break;
     default:
@@ -91,7 +95,7 @@ void uart_isr(u32 minor) {
             cursor_pos = 0;
         }
 
-        dev_putc(dev_init(0, 0), c);
+        dev_putc(DEV_INIT(0, 0), c);
 
         break;
     }
@@ -102,7 +106,7 @@ i32 uart_putc(u32 minor, char c) {
     i32 res;
 
     if (c == '\n') {
-        res = dev_putc(dev_init(0, 0), '\r');
+        res = dev_putc(DEV_INIT(0, 0), '\r');
         if (res < 0)
             return res;
     }

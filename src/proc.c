@@ -46,9 +46,9 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     proc->fds[0].flags = FD_FLAG_ALLOCATED | FD_FLAG_READABLE;
     proc->fds[1].flags = FD_FLAG_ALLOCATED | FD_FLAG_WRITABLE;
     proc->fds[2].flags = FD_FLAG_ALLOCATED | FD_FLAG_WRITABLE;
-    proc->fds[0].dev = dev_init(0, 0);
-    proc->fds[1].dev = dev_init(0, 0);
-    proc->fds[2].dev = dev_init(0, 0);
+    proc->fds[0].dev = DEV_INIT(0, 0);
+    proc->fds[1].dev = DEV_INIT(0, 0);
+    proc->fds[2].dev = DEV_INIT(0, 0);
 
     proc->state = PROC_STATE_INIT;
     timer_init(&proc->timer);

@@ -13,6 +13,10 @@ typedef enum {
 
 i32 fb_putc(u32 minor, char c);
 
+u32 framebuffer[1600 * 900 * 2];
+static i32 pos = 0, line = 0;
+static state_t state = NORMAL;
+static i32 num = 0, fg = 0xFFF2EFDE, bg = 0xFF202020;
 static driver_t driver = {
     .nr_devs = 1,
     .irqs = nullptr,
@@ -20,10 +24,6 @@ static driver_t driver = {
     .getc = nullptr,
     .putc = fb_putc,
 };
-u32 framebuffer[1600 * 900 * 2];
-static i32 pos = 0, line = 0;
-static state_t state = NORMAL;
-static i32 num = 0, fg = 0xFFF2EFDE, bg = 0xFF202020;
 
 i32 init_fb(void) {
     i32 res = driver_add(&driver);
