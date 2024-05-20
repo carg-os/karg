@@ -19,7 +19,7 @@ void trap_handler(trapframe_t *frame) {
         case 5:
             timer_isr();
             break;
-        case 9:
+        case 9: {
             irq_t irq = plic_claim();
             for (u32 i = 0; i < nr_drivers; i++) {
                 if (!driver_table[i]->irqs || !driver_table[i]->isr)
@@ -34,6 +34,7 @@ void trap_handler(trapframe_t *frame) {
             }
             plic_complete(irq);
             break;
+        }
         }
     } else {
         switch (frame->scause) {

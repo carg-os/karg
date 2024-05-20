@@ -8,8 +8,10 @@ fmt:
 
 build:
 	@mkdir build
-	@cmake -B build -D CMAKE_TOOLCHAIN_FILE=$(CMAKE_TOOLCHAIN_FILE) \
-        -D PLATFORM=$(PLATFORM)
+	@cmake \
+		-B build \
+		-D CMAKE_TOOLCHAIN_FILE=$(CMAKE_TOOLCHAIN_FILE) \
+		-D PLATFORM=$(PLATFORM)
 
 FORCE:
 
