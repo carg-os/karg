@@ -32,11 +32,13 @@ if (PLATFORM STREQUAL VIRT)
         src/platforms/virt/platform.c
         src/platforms/virt/tty.c
     )
+    set(PLATFORM_INCLUDE include/platforms/virt)
 elseif (PLATFORM STREQUAL CV1800B)
     target_sources(karg PRIVATE
         src/platforms/cv1800b/platform.c
         src/platforms/cv1800b/tty.c
     )
+    set(PLATFORM_INCLUDE include/platforms/cv1800b)
 elseif (PLATFORM STREQUAL D1)
     target_sources(karg PRIVATE
         src/platforms/d1/ccu.c
@@ -47,7 +49,19 @@ elseif (PLATFORM STREQUAL D1)
         src/platforms/d1/platform.c
         src/platforms/d1/tty.c
     )
+    set(PLATFORM_INCLUDE include/platforms/d1)
 endif()
+
+add_dependencies(karg linker-script)
+
+add_custom_target(linker-script DEPENDS kernel.ld)
+
+add_custom_command(OUTPUT kernel.ld
+    COMMAND clang -E -x c -D __LINKER__
+                -I ${PROJECT_SOURCE_DIR}/${PLATFORM_INCLUDE}
+                ${PROJECT_SOURCE_DIR}/kernel.ld > kernel.ld
+    MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/kernel.ld
+)
 
 set_property(TARGET karg PROPERTY C_STANDARD 23)
 set_property(TARGET karg PROPERTY COMPILE_WARNING_AS_ERROR ON)
@@ -57,13 +71,5 @@ target_compile_options(karg PRIVATE
     -Wall
     -Wextra
 )
-target_include_directories(karg PRIVATE include)
+target_include_directories(karg PRIVATE include ${PLATFORM_INCLUDE})
 target_compile_definitions(karg PRIVATE PLATFORM_${PLATFORM})
-
-if (PLATFORM STREQUAL VIRT)
-    target_include_directories(karg PRIVATE include/platforms/virt)
-elseif (PLATFORM STREQUAL CV1800B)
-    target_include_directories(karg PRIVATE include/platforms/cv1800b)
-elseif (PLATFORM STREQUAL D1)
-    target_include_directories(karg PRIVATE include/platforms/d1)
-endif()

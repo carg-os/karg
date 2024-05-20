@@ -1,7 +1,8 @@
-ENTRY(_start)
+#include <platform.h>
 
+ENTRY(_start)
 SECTIONS {
-    . = 0x80200000;
+    . = BOOT_ENTRY_BASE;
 
     .init : {
         *(.init .init.*)
