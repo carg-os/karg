@@ -10,17 +10,26 @@ add_library(karg
     src/driver.c
     src/entry.S
     src/fd.c
-    src/kalloc.c
     src/kmain.c
     src/kprintf.c
-    src/page_alloc.c
+    src/mm/kalloc.c
+    src/mm/page_alloc.c
     src/plic.c
     src/proc.c
     src/proc.S
     src/sbi.c
     src/sched.c
     src/sem.c
-    src/syscall.c
+    src/syscalls/exit.c
+    src/syscalls/getpid.c
+    src/syscalls/proc.c
+    src/syscalls/read.c
+    src/syscalls/reboot.c
+    src/syscalls/sleepns.c
+    src/syscalls/syscall.c
+    src/syscalls/wait.c
+    src/syscalls/write.c
+    src/syscalls/yield.c
     src/timer.c
     src/trap.c
     src/trap.S
