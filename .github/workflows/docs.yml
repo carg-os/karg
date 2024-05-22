@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install doxygen
       - name: Build documentations
-        run: doxygen
+        run: make docs
       - name: Upload the artifact
         uses: actions/upload-pages-artifact@v1
         with:

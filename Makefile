@@ -6,6 +6,10 @@ clean:
 fmt:
 	@clang-format -i $(shell find -not -path "./build/*" -name "*.[ch]")
 
+.PHONY: docs
+docs:
+	@doxygen
+
 build:
 	@mkdir build
 	@cmake \
