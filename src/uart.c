@@ -7,7 +7,7 @@
 #include <plic.h>
 #include <sem.h>
 
-#define REG(reg) *((volatile u8 *) UART_BASE0 + UART_REG_SIZE * (reg))
+#define REG(reg) *((volatile u8 *) (UART_BASE0 + UART_REG_SIZE * (reg)))
 #define THR 0
 #define RBR 0
 #define IER 1

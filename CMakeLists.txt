@@ -35,6 +35,7 @@ add_library(karg
     src/trap.S
     src/tty.c
     src/uart.c
+    src/virtio.c
 )
 if (PLATFORM STREQUAL VIRT)
     target_sources(karg PRIVATE
