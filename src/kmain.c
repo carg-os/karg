@@ -19,12 +19,8 @@ static void init_subsystems(void) {
     init_platform();
 }
 
-void init_virtio();
-
 [[noreturn]] void kmain(void) {
     init_subsystems();
-
-    init_virtio();
 
     proc_t *init_proc = (proc_t *) kmalloc(sizeof(proc_t));
     proc_init(init_proc, init, 0, nullptr, 0, nullptr);

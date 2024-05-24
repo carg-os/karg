@@ -35,12 +35,13 @@ add_library(karg
     src/trap.S
     src/tty.c
     src/uart.c
-    src/virtio.c
 )
 if (PLATFORM STREQUAL VIRT)
     target_sources(karg PRIVATE
+        src/platforms/virt/font.c
         src/platforms/virt/platform.c
         src/platforms/virt/tty.c
+        src/platforms/virt/virtio.c
     )
     set(PLATFORM_INCLUDE include/platforms/virt)
 elseif (PLATFORM STREQUAL CV1800B)
