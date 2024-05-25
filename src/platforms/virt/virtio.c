@@ -222,6 +222,15 @@ static i32 virtio_putc(u32 minor, char c) {
                             0xFF202020;
                     }
                 }
+
+                while (avail.idx != used.idx)
+                    ;
+                transfer.r.x = 0;
+                transfer.r.y = 0;
+                transfer.r.width = 1600;
+                transfer.r.height = 900;
+                transfer.offset = 0;
+                update_fb();
             } else if (line > 55) {
                 //                de_set_active_framebuffer(framebuffer +
                 //                                          1600 * 16 * (line -
@@ -232,6 +241,15 @@ static i32 virtio_putc(u32 minor, char c) {
                             0xFF202020;
                     }
                 }
+
+                while (avail.idx != used.idx)
+                    ;
+                transfer.r.x = 0;
+                transfer.r.y = 0;
+                transfer.r.width = 1600;
+                transfer.r.height = 900;
+                transfer.offset = (line - 55) * 16 * 1600 * 4;
+                update_fb();
             }
             for (; pos < 200; pos++) {
                 for (i32 i = 0; i < 16; i++) {
@@ -248,8 +266,12 @@ static i32 virtio_putc(u32 minor, char c) {
                 }
             }
 
+            while (avail.idx != used.idx)
+                ;
             transfer.r.x = 0;
             transfer.r.y = line * 16;
+            if (line > 55)
+                transfer.r.y = 55 * 16;
             transfer.r.width = 1600;
             transfer.r.height = 16;
             transfer.offset = line * 16 * 1600 * 4;
@@ -287,12 +309,15 @@ static i32 virtio_putc(u32 minor, char c) {
                 }
             }
 
+            while (avail.idx != used.idx)
+                ;
             transfer.r.x = 0;
             transfer.r.y = line * 16;
+            if (line > 55)
+                transfer.r.y = 55 * 16;
             transfer.r.width = 1600;
             transfer.r.height = 16;
             transfer.offset = line * 16 * 1600 * 4;
-
             update_fb();
         }
     } else if (state == ESCAPE) {
@@ -331,6 +356,13 @@ static i32 virtio_putc(u32 minor, char c) {
                 line = 0;
                 state = NORMAL;
 
+                while (avail.idx != used.idx)
+                    ;
+                transfer.r.x = 0;
+                transfer.r.y = 0;
+                transfer.r.width = 1600;
+                transfer.r.height = 900;
+                transfer.offset = 0;
                 update_fb();
             } else {
                 state = ESCAPE;
@@ -409,7 +441,7 @@ i32 init_virtio(void) {
     attach_backing.nr_entries = 1;
 
     gpu_mem_entry.addr = (usize) framebuffer;
-    gpu_mem_entry.length = 1600 * 900 * 4;
+    gpu_mem_entry.length = sizeof(framebuffer);
 
     set_scanout.hdr.type = VIRTIO_GPU_CMD_SET_SCANOUT;
     set_scanout.hdr.flags = 0;
