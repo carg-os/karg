@@ -3,6 +3,7 @@
 #include <csr.h>
 #include <driver.h>
 #include <errno.h>
+#include <kprintf.h>
 #include <rv.h>
 #include <syscall.h>
 #include <timer.h>

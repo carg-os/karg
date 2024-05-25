@@ -247,6 +247,14 @@ static i32 virtio_putc(u32 minor, char c) {
                     write_fb(i, j, 0xFF202020);
                 }
             }
+
+            transfer.r.x = 0;
+            transfer.r.y = line * 16;
+            transfer.r.width = 1600;
+            transfer.r.height = 16;
+            transfer.offset = line * 16 * 1600 * 4;
+            update_fb();
+
             pos = 0;
         } else if (c == '\x1B') {
             state = ESCAPE;
@@ -278,6 +286,12 @@ static i32 virtio_putc(u32 minor, char c) {
                     write_fb(i, j, 0xFFF2EFDE);
                 }
             }
+
+            transfer.r.x = 0;
+            transfer.r.y = line * 16;
+            transfer.r.width = 1600;
+            transfer.r.height = 16;
+            transfer.offset = line * 16 * 1600 * 4;
 
             update_fb();
         }
