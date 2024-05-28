@@ -2,4 +2,4 @@
 
 #include <types.h>
 
-extern const u8 font[128][16];
+i32 init_fbcon(void);

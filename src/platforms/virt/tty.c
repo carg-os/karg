@@ -1,11 +1,11 @@
 #include <tty.h>
 
+#include <fbcon.h>
 #include <uart.h>
-#include <virtio.h>
 
 i32 (*const TTY_INITS[])(void) = {
     init_uart,
-    init_virtio,
+    init_fbcon,
     nullptr,
 };
 

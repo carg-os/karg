@@ -1,3 +1,5 @@
+#include <fb.h>
+
 #include <driver.h>
 #include <font.h>
 #include <types.h>
@@ -152,8 +154,6 @@ struct virtq_used {
 #define STATUS_DRIVER_OK 4
 #define STATUS_FEATURES_OK 8
 
-static u32 framebuffer[1600 * 900 * 2];
-
 static struct virtq_desc desc[128];
 static struct virtq_avail avail;
 static struct virtq_used used;
@@ -166,23 +166,32 @@ static struct virtio_gpu_transfer_to_host_2d transfer;
 static struct virtio_gpu_resource_flush flush;
 static struct virtio_gpu_ctrl_hdr hdr[5];
 
-typedef enum {
-    NORMAL,
-    ESCAPE,
-    NUM,
-} state_t;
+#define FB_WIDTH 1600
+#define FB_HEIGHT 900
+#define FB_PITCH 1600 * 4
 
-static state_t state = NORMAL;
-static i32 pos = 0, line = 0;
-static i32 num = 0, fg = 0xFFF2EFDE, bg = 0xFF202020;
+u32 fb[FB_WIDTH * FB_HEIGHT];
+static usize offset = 0;
 
-static void write_fb(i32 i, i32 j, u32 color) {
-    framebuffer[1600 * (i + 16 * line) + j + 8 * pos] = color;
-    if (line >= 57)
-        framebuffer[1600 * (i + 16 * (line - 57)) + j + 8 * pos] = color;
+i32 fb_set_offset(u32 x, u32 y) {
+    offset = y * FB_PITCH + x;
+    return 0;
 }
 
-static void update_fb(void) {
+i32 fb_flush(u32 y, u32 height) {
+    while (avail.idx != used.idx)
+        ;
+    transfer.r.x = 0;
+    transfer.r.y = y;
+    transfer.r.width = FB_WIDTH;
+    transfer.r.height = height;
+    transfer.offset = offset + y * FB_PITCH;
+
+    flush.r.x = 0;
+    flush.r.y = y;
+    flush.r.width = FB_WIDTH;
+    flush.r.height = height;
+
     desc[0].addr = (usize) &transfer;
     desc[0].len = sizeof(transfer);
     desc[0].flags = VIRTQ_DESC_F_NEXT;
@@ -206,207 +215,13 @@ static void update_fb(void) {
     avail.ring[avail.idx++ % 128] = 0;
     avail.ring[avail.idx++ % 128] = 2;
     REG(NOTIFY) = 0;
-}
-
-static i32 virtio_putc(u32 minor, char c) {
-    (void) minor;
-    if (state == NORMAL) {
-        if (c == '\n') {
-            line++;
-            if (line == 112) {
-                //                de_set_active_framebuffer(framebuffer);
-                line = 55;
-                for (i32 i = 0; i < 4; i++) {
-                    for (i32 j = 0; j < 1600; j++) {
-                        framebuffer[1600 * (i + 16 * (line + 1)) + j] =
-                            0xFF202020;
-                    }
-                }
-
-                while (avail.idx != used.idx)
-                    ;
-                transfer.r.x = 0;
-                transfer.r.y = 0;
-                transfer.r.width = 1600;
-                transfer.r.height = 900;
-                transfer.offset = 0;
-                update_fb();
-            } else if (line > 55) {
-                //                de_set_active_framebuffer(framebuffer +
-                //                                          1600 * 16 * (line -
-                //                                          55));
-                for (i32 i = 0; i < 4; i++) {
-                    for (i32 j = 0; j < 1600; j++) {
-                        framebuffer[1600 * (i + 16 * (line + 1)) + j] =
-                            0xFF202020;
-                    }
-                }
-
-                while (avail.idx != used.idx)
-                    ;
-                transfer.r.x = 0;
-                transfer.r.y = 0;
-                transfer.r.width = 1600;
-                transfer.r.height = 900;
-                transfer.offset = (line - 55) * 16 * 1600 * 4;
-                update_fb();
-            }
-            for (; pos < 200; pos++) {
-                for (i32 i = 0; i < 16; i++) {
-                    for (i32 j = 0; j < 8; j++) {
-                        write_fb(i, j, 0xFF202020);
-                    }
-                }
-            }
-            pos = 0;
-        } else if (c == '\r') {
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFF202020);
-                }
-            }
-
-            while (avail.idx != used.idx)
-                ;
-            transfer.r.x = 0;
-            transfer.r.y = line * 16;
-            if (line > 55)
-                transfer.r.y = 55 * 16;
-            transfer.r.width = 1600;
-            transfer.r.height = 16;
-            transfer.offset = line * 16 * 1600 * 4;
-            update_fb();
-
-            pos = 0;
-        } else if (c == '\x1B') {
-            state = ESCAPE;
-        } else if (c == '\b') {
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFF202020);
-                }
-            }
-            pos--;
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFFF2EFDE);
-                }
-            }
-        } else {
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    if (font[(u8) c][i] & (1 << (7 - j))) {
-                        write_fb(i, j, fg);
-                    } else {
-                        write_fb(i, j, bg);
-                    }
-                }
-            }
-            pos++;
-            for (i32 i = 0; i < 16; i++) {
-                for (i32 j = 0; j < 8; j++) {
-                    write_fb(i, j, 0xFFF2EFDE);
-                }
-            }
-
-            while (avail.idx != used.idx)
-                ;
-            transfer.r.x = 0;
-            transfer.r.y = line * 16;
-            if (line > 55)
-                transfer.r.y = 55 * 16;
-            transfer.r.width = 1600;
-            transfer.r.height = 16;
-            transfer.offset = line * 16 * 1600 * 4;
-            update_fb();
-        }
-    } else if (state == ESCAPE) {
-        if ('0' <= c && c <= '9') {
-            num = c - '0';
-            state = NUM;
-        }
-    } else {
-        if ('0' <= c && c <= '9') {
-            num = num * 10 + c - '0';
-        } else {
-            switch (num) {
-            case 0:
-                fg = 0xFFF2EFDE;
-                bg = 0xFF202020;
-                break;
-            case 31:
-                fg = 0xFFDE382B;
-                break;
-            case 33:
-                fg = 0xFFFFC706;
-                break;
-            case 36:
-                fg = 0xFF2CB5E9;
-                break;
-            case 90:
-                fg = 0xFF808080;
-                break;
-            }
-            if (c == 'm') {
-                state = NORMAL;
-            } else if (c == 'J') {
-                //                de_set_active_framebuffer(framebuffer);
-                for (i32 i = 0; i < 1600 * 900; i++)
-                    framebuffer[i] = 0xFF202020;
-                line = 0;
-                state = NORMAL;
-
-                while (avail.idx != used.idx)
-                    ;
-                transfer.r.x = 0;
-                transfer.r.y = 0;
-                transfer.r.width = 1600;
-                transfer.r.height = 900;
-                transfer.offset = 0;
-                update_fb();
-            } else {
-                state = ESCAPE;
-            }
-        }
-    }
 
     return 0;
 }
 
-static driver_t driver = {
-    .nr_devs = 1,
-    .irqs = nullptr,
-    .isr = nullptr,
-    .getc = nullptr,
-    .putc = virtio_putc,
-};
-
-i32 init_virtio(void) {
-    driver_add(&driver);
-
-    for (int i = 0; i < 900; i++) {
-        for (int j = 0; j < 1600; j++) {
-            u32 color;
-            if (j <= 200) {
-                color = 0xFFFFFFFF;
-            } else if (j <= 400) {
-                color = 0xFFFFFF00;
-            } else if (j <= 600) {
-                color = 0xFF00FFFF;
-            } else if (j <= 800) {
-                color = 0xFF00FF00;
-            } else if (j <= 1000) {
-                color = 0xFFFF00FF;
-            } else if (j <= 1200) {
-                color = 0xFFFF0000;
-            } else if (j <= 1400) {
-                color = 0xFF0000FF;
-            } else if (j <= 1600) {
-                color = 0xFF000000;
-            }
-            framebuffer[i * 1600 + j] = color;
-        }
-    }
+i32 init_fb(u32 *width, u32 *height) {
+    *width = 1600;
+    *height = 900;
 
     REG(STATUS) = 0;
     REG(STATUS) |= STATUS_ACK;
@@ -430,8 +245,8 @@ i32 init_virtio(void) {
     create_2d.hdr.ctx_id = 0;
     create_2d.resource_id = 1;
     create_2d.format = VIRTIO_GPU_FORMAT_B8G8R8X8_UNORM;
-    create_2d.width = 1600;
-    create_2d.height = 900;
+    create_2d.width = FB_WIDTH;
+    create_2d.height = FB_HEIGHT;
 
     attach_backing.hdr.type = VIRTIO_GPU_CMD_RESOURCE_ATTACH_BACKING;
     attach_backing.hdr.flags = 0;
@@ -440,8 +255,8 @@ i32 init_virtio(void) {
     attach_backing.resource_id = 1;
     attach_backing.nr_entries = 1;
 
-    gpu_mem_entry.addr = (usize) framebuffer;
-    gpu_mem_entry.length = sizeof(framebuffer);
+    gpu_mem_entry.addr = (usize) fb;
+    gpu_mem_entry.length = sizeof(fb);
 
     set_scanout.hdr.type = VIRTIO_GPU_CMD_SET_SCANOUT;
     set_scanout.hdr.flags = 0;
@@ -449,8 +264,8 @@ i32 init_virtio(void) {
     set_scanout.hdr.ctx_id = 0;
     set_scanout.r.x = 0;
     set_scanout.r.y = 0;
-    set_scanout.r.width = 1600;
-    set_scanout.r.height = 900;
+    set_scanout.r.width = FB_WIDTH;
+    set_scanout.r.height = FB_HEIGHT;
     set_scanout.scanout_id = 0;
     set_scanout.resource_id = 1;
 
@@ -460,8 +275,8 @@ i32 init_virtio(void) {
     transfer.hdr.ctx_id = 0;
     transfer.r.x = 0;
     transfer.r.y = 0;
-    transfer.r.width = 1600;
-    transfer.r.height = 900;
+    transfer.r.width = FB_WIDTH;
+    transfer.r.height = FB_HEIGHT;
     transfer.offset = 0;
     transfer.resource_id = 1;
 
@@ -471,8 +286,8 @@ i32 init_virtio(void) {
     flush.hdr.ctx_id = 0;
     flush.r.x = 0;
     flush.r.y = 0;
-    flush.r.width = 1600;
-    flush.r.height = 900;
+    flush.r.width = FB_WIDTH;
+    flush.r.height = FB_HEIGHT;
     flush.resource_id = 1;
 
     desc[0].addr = (usize) &create_2d;

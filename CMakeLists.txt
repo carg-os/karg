@@ -9,6 +9,7 @@ add_library(karg
     src/dev.c
     src/driver.c
     src/entry.S
+    src/fbcon.c
     src/fd.c
     src/kmain.c
     src/kprintf.c
@@ -38,10 +39,10 @@ add_library(karg
 )
 if (PLATFORM STREQUAL VIRT)
     target_sources(karg PRIVATE
+        src/platforms/virt/fb.c
         src/platforms/virt/font.c
         src/platforms/virt/platform.c
         src/platforms/virt/tty.c
-        src/platforms/virt/virtio.c
     )
     set(PLATFORM_INCLUDE include/platforms/virt)
 elseif (PLATFORM STREQUAL CV1800B)
