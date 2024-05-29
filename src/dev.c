@@ -3,20 +3,14 @@
 #include <driver.h>
 #include <errno.h>
 
-i32 dev_getc(dev_t dev) {
-    u32 major = DEV_MAJOR(dev);
-    u32 minor = DEV_MINOR(dev);
-    if (major >= nr_drivers || minor >= driver_table[major]->nr_devs ||
-        !driver_table[major]->getc)
+isize dev_read(dev_t dev, u8 *buf, usize size) {
+    if (dev.num >= dev.driver->nr_devs || !dev.driver->read)
         return -ENXIO;
-    return driver_table[major]->getc(minor);
+    return dev.driver->read(dev.num, buf, size);
 }
 
-i32 dev_putc(dev_t dev, char c) {
-    u32 major = DEV_MAJOR(dev);
-    u32 minor = DEV_MINOR(dev);
-    if (major >= nr_drivers || minor >= driver_table[major]->nr_devs ||
-        !driver_table[major]->putc)
+isize dev_write(dev_t dev, const u8 *buf, usize size) {
+    if (dev.num >= dev.driver->nr_devs || !dev.driver->write)
         return -ENXIO;
-    return driver_table[major]->putc(minor, c);
+    return dev.driver->write(dev.num, buf, size);
 }

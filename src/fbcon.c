@@ -1,5 +1,3 @@
-#include <fbcon.h>
-
 #include <driver.h>
 #include <fb.h>
 #include <font.h>
@@ -45,10 +43,8 @@ static void handle_char(char c) {
             cursor.x -= FONT_WIDTH;
         break;
     case '\n':
-        cursor.y += FONT_HEIGHT;
-        break;
-    case '\r':
         cursor.x = 0;
+        cursor.y += FONT_HEIGHT;
         break;
     case '\x1B':
         state = STATE_ESCAPE;
@@ -107,9 +103,7 @@ static bool handle_escape_code(char c) {
     return true;
 }
 
-static i32 fbcon_putc(u32 minor, char c) {
-    (void) minor;
-
+static void fbcon_putc(char c) {
     switch (state) {
     case STATE_NORMAL:
         handle_char(c);
@@ -132,24 +126,26 @@ static i32 fbcon_putc(u32 minor, char c) {
         }
         break;
     }
-
-    return 0;
 }
 
-static driver_t driver = {
+static isize fbcon_write(u32 minor, const u8 *buf, usize size) {
+    (void) minor;
+    for (usize i = 0; i < size; i++) {
+        fbcon_putc(buf[i]);
+    }
+    return size;
+}
+
+driver_t fbcon_driver = {
     .nr_devs = 1,
     .irqs = nullptr,
     .isr = nullptr,
-    .getc = nullptr,
-    .putc = fbcon_putc,
+    .read = nullptr,
+    .write = fbcon_write,
 };
 
 i32 init_fbcon(void) {
     i32 res = init_fb(&fb_width, &fb_height);
-    if (res < 0)
-        return res;
-
-    res = driver_add(&driver);
     if (res < 0)
         return res;
 

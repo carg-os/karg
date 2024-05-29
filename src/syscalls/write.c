@@ -14,10 +14,5 @@ isize sys_write(const trapframe_t *frame) {
     if (!buf)
         return -EFAULT;
 
-    for (usize i = 0; i < size; i++) {
-        i32 res = dev_putc(curr_proc->fds[fd].dev, buf[i]);
-        if (res < 0)
-            return res;
-    }
-    return size;
+    return dev_write(curr_proc->fds[fd].dev, buf, size);
 }

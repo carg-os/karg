@@ -1,6 +1,5 @@
 #include <driver.h>
 
-#include <config.h>
 #include <errno.h>
 
 driver_t *driver_table[DRIVER_TABLE_SIZE];

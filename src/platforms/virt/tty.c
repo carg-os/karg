@@ -1,7 +1,7 @@
 #include <tty.h>
 
-#include <fbcon.h>
-#include <uart.h>
+i32 init_uart(void);
+i32 init_fbcon(void);
 
 i32 (*const TTY_INITS[])(void) = {
     init_uart,
@@ -9,10 +9,10 @@ i32 (*const TTY_INITS[])(void) = {
     nullptr,
 };
 
-const dev_t TTY_SRC = DEV_INIT(1, 0);
+const dev_t TTY_SRC = (dev_t){.driver = &uart_driver, .num = 0};
 
 const dev_t TTY_SINKS[] = {
-    DEV_INIT(1, 0),
-    DEV_INIT(2, 0),
-    DEV_INIT(0, 0),
+    (dev_t){.driver = &uart_driver, .num = 0},
+    (dev_t){.driver = &fbcon_driver, .num = 0},
+    (dev_t){.driver = nullptr, .num = 0},
 };

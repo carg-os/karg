@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dev.h>
-#include <types.h>
 
 #define FD_FLAG_ALLOCATED 0x00000001
 #define FD_FLAG_READABLE 0x00000002

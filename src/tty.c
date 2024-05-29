@@ -2,26 +2,18 @@
 
 #include <dev.h>
 #include <driver.h>
-#include <uart.h>
 
-i32 tty_getc(u32 minor);
-i32 tty_putc(u32 minor, char c);
+isize tty_read(u32 minor, u8 *buf, usize size) {
+    (void) minor;
 
-static driver_t driver = {
-    .nr_devs = 1,
-    .irqs = nullptr,
-    .isr = nullptr,
-    .getc = tty_getc,
-    .putc = tty_putc,
-};
+    return dev_read(TTY_SRC, buf, size);
+}
 
-i32 init_tty(void) {
-    i32 res = driver_add(&driver);
-    if (res < 0)
-        return res;
+isize tty_write(u32 minor, const u8 *buf, usize size) {
+    (void) minor;
 
-    for (usize i = 0; TTY_INITS[i]; i++) {
-        res = TTY_INITS[i]();
+    for (usize i = 0; TTY_SINKS[i].driver; i++) {
+        isize res = dev_write(TTY_SINKS[i], buf, size);
         if (res < 0)
             return res;
     }
@@ -29,17 +21,17 @@ i32 init_tty(void) {
     return 0;
 }
 
-i32 tty_getc(u32 minor) {
-    (void) minor;
+driver_t tty_driver = {
+    .nr_devs = 1,
+    .irqs = nullptr,
+    .isr = nullptr,
+    .read = tty_read,
+    .write = tty_write,
+};
 
-    return dev_getc(TTY_SRC);
-}
-
-i32 tty_putc(u32 minor, char c) {
-    (void) minor;
-
-    for (usize i = 0; TTY_SINKS[i] != DEV_INIT(0, 0); i++) {
-        i32 res = dev_putc(TTY_SINKS[i], c);
+i32 init_tty(void) {
+    for (usize i = 0; TTY_INITS[i]; i++) {
+        i32 res = TTY_INITS[i]();
         if (res < 0)
             return res;
     }

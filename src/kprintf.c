@@ -4,9 +4,10 @@
 #include <stdarg.h>
 #include <types.h>
 
+/*
 static usize print_usize(usize val, i32 radix) {
     if (val == 0) {
-        dev_putc(DEV_INIT(0, 0), '0');
+        dev_write(DEV_INIT(0, 0), "0", 1);
         return 1;
     }
 
@@ -183,3 +184,4 @@ isize kprintf(const char *fmt, ...) {
     va_end(args);
     return n;
 }
+*/

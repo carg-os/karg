@@ -1,5 +1,3 @@
-#include <uart.h>
-
 #include <config.h>
 #include <dev.h>
 #include <driver.h>
@@ -20,44 +18,19 @@
 
 #define LSR_THRE 0x20
 
-void uart_isr(u32 minor);
-i32 uart_getc(u32 minor);
-i32 uart_putc(u32 minor, char c);
-
 static sem_t rx_sem;
-static char rx_buf[UART_RX_BUF_SIZE];
+static u8 rx_buf[UART_RX_BUF_SIZE];
 static usize rx_head = 0, rx_tail = 0;
 static usize cursor_pos = 0;
-static irq_t irqs[] = {
-    UART_IRQ0,
-};
-static driver_t driver = {
-    .nr_devs = 1,
-    .irqs = irqs,
-    .isr = uart_isr,
-    .getc = uart_getc,
-    .putc = uart_putc,
-};
 
-i32 init_uart(void) {
-    sem_init(&rx_sem);
-    i32 res = driver_add(&driver);
-    if (res < 0)
-        return res;
-
-    plic_enable_irq(UART_IRQ0);
-    REG(IER) = IER_ERBFI;
-    return 0;
-}
-
-void uart_isr(u32 minor) {
+static void uart_isr(u32 minor) {
     if (REG(IIR) == 0xC7) {
         REG(USR);
         return;
     }
 
     (void) minor;
-    char c = REG(RBR);
+    u8 c = REG(RBR);
 
     switch (c) {
     case '\x7F':
@@ -79,9 +52,8 @@ void uart_isr(u32 minor) {
 
             cursor_pos--;
 
-            dev_putc(DEV_INIT(0, 0), '\b');
-            dev_putc(DEV_INIT(0, 0), ' ');
-            dev_putc(DEV_INIT(0, 0), '\b');
+            dev_write((dev_t){.driver = &tty_driver, .num = 0},
+                      (const u8 *) "\b \b", 3);
         }
         break;
     default:
@@ -95,35 +67,66 @@ void uart_isr(u32 minor) {
             cursor_pos = 0;
         }
 
-        dev_putc(DEV_INIT(0, 0), c);
+        dev_write((dev_t){.driver = &tty_driver, .num = 0}, &c, 1);
 
         break;
     }
 }
 
-i32 uart_putc(u32 minor, char c) {
+static isize uart_read(u32 minor, u8 *buf, usize size) {
     (void) minor;
-    i32 res;
 
-    if (c == '\n') {
-        res = dev_putc(DEV_INIT(0, 0), '\r');
-        if (res < 0)
-            return res;
+    for (usize i = 0; i < size; i++) {
+        sem_wait(&rx_sem);
+        buf[i] = rx_buf[rx_head];
+        rx_head++;
+        rx_head %= UART_RX_BUF_SIZE;
+
+        if (buf[i] == '\n')
+            return i + 1;
     }
 
+    return size;
+}
+
+static void uart_put_char(u8 c) {
     while (!(REG(LSR) & LSR_THRE))
         ;
     REG(THR) = c;
-
-    return 0;
 }
 
-i32 uart_getc(u32 minor) {
+static isize uart_write(u32 minor, const u8 *buf, usize size) {
     (void) minor;
 
-    sem_wait(&rx_sem);
-    char c = rx_buf[rx_head];
-    rx_head++;
-    rx_head %= UART_RX_BUF_SIZE;
-    return c;
+    for (usize i = 0; i < size; i++) {
+        u8 c = buf[i];
+        if (c == '\n')
+            uart_put_char('\r');
+        uart_put_char(c);
+    }
+
+    return size;
+}
+
+static irq_t irqs[] = {
+    UART_IRQ0,
+};
+
+driver_t uart_driver = {
+    .nr_devs = 1,
+    .irqs = irqs,
+    .isr = uart_isr,
+    .read = uart_read,
+    .write = uart_write,
+};
+
+i32 init_uart(void) {
+    sem_init(&rx_sem);
+    i32 res = driver_add(&uart_driver);
+    if (res < 0)
+        return res;
+
+    plic_enable_irq(UART_IRQ0);
+    REG(IER) = IER_ERBFI;
+    return 0;
 }
