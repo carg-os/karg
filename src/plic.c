@@ -15,11 +15,11 @@ void init_plic(void) {
     REG(PRIO_THRESHOLD) = 0;
 }
 
-void plic_enable_irq(irq_t irq) {
+void plic_enable_irq(u32 irq) {
     REG(INTR_ENABLE(irq)) |= 1 << irq % 32;
     REG(INTR_PRIO(irq)) = 1;
 }
 
-irq_t plic_claim(void) { return REG(INTR_CLAIM); }
+u32 plic_claim(void) { return REG(INTR_CLAIM); }
 
-void plic_complete(irq_t irq) { REG(INTR_COMPLETION) = irq; }
+void plic_complete(u32 irq) { REG(INTR_COMPLETION) = irq; }

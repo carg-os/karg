@@ -1,4 +1,5 @@
 #include <kalloc.h>
+#include <kprintf.h>
 #include <page_alloc.h>
 #include <platform.h>
 #include <plic.h>

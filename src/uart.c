@@ -4,6 +4,7 @@
 #include <platform.h>
 #include <plic.h>
 #include <sem.h>
+#include <trap.h>
 
 #define REG(reg) *((volatile u8 *) (UART_BASE0 + UART_REG_SIZE * (reg)))
 #define THR 0
@@ -108,21 +109,15 @@ static isize uart_write(u32 minor, const u8 *buf, usize size) {
     return size;
 }
 
-static irq_t irqs[] = {
-    UART_IRQ0,
-};
-
 driver_t uart_driver = {
     .nr_devs = 1,
-    .irqs = irqs,
-    .isr = uart_isr,
     .read = uart_read,
     .write = uart_write,
 };
 
 i32 init_uart(void) {
     sem_init(&rx_sem);
-    i32 res = driver_add(&uart_driver);
+    i32 res = trap_register_isr(UART_IRQ0, uart_isr, 0);
     if (res < 0)
         return res;
 

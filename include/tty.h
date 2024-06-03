@@ -8,3 +8,4 @@ extern const dev_t TTY_SRC;
 extern const dev_t TTY_SINKS[];
 
 i32 init_tty(void);
+i32 tty_putc(char c);

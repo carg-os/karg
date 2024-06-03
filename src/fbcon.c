@@ -138,8 +138,6 @@ static isize fbcon_write(u32 minor, const u8 *buf, usize size) {
 
 driver_t fbcon_driver = {
     .nr_devs = 1,
-    .irqs = nullptr,
-    .isr = nullptr,
     .read = nullptr,
     .write = fbcon_write,
 };

@@ -4,13 +4,32 @@
 #include <driver.h>
 #include <errno.h>
 #include <kprintf.h>
+#include <plic.h>
 #include <rv.h>
 #include <syscall.h>
 #include <timer.h>
 
+typedef struct {
+    u32 irq;
+    void (*isr)(u32 num);
+    u32 num;
+} isr_entry;
+
+static isr_entry isr_entries[256];
+static u32 nr_isr_entries;
+
 i32 init_trap(void) {
     void trap_entry(void);
     csr_write(stvec, trap_entry);
+    return 0;
+}
+
+i32 trap_register_isr(u32 irq, void (*isr)(u32 num), u32 num) {
+    isr_entries[nr_isr_entries++] = (isr_entry){
+        .irq = irq,
+        .isr = isr,
+        .num = num,
+    };
     return 0;
 }
 
@@ -21,17 +40,12 @@ void trap_handler(trapframe_t *frame) {
             timer_isr();
             break;
         case 9: {
-            irq_t irq = plic_claim();
-            for (u32 i = 0; i < nr_drivers; i++) {
-                if (!driver_table[i]->irqs || !driver_table[i]->isr)
+            u32 irq = plic_claim();
+            for (u32 i = 0; i < nr_isr_entries; i++) {
+                if (isr_entries[i].irq != irq)
                     continue;
 
-                for (u32 j = 0; j < driver_table[i]->nr_devs; j++) {
-                    if (irq != driver_table[i]->irqs[j])
-                        continue;
-
-                    driver_table[i]->isr(j);
-                }
+                isr_entries[i].isr(isr_entries[i].num);
             }
             plic_complete(irq);
             break;

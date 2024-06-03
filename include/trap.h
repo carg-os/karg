@@ -18,3 +18,4 @@ typedef struct {
 } trapframe_t;
 
 i32 init_trap(void);
+i32 trap_register_isr(u32 irq, void (*isr)(u32 num), u32 num);

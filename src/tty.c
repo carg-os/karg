@@ -23,8 +23,6 @@ isize tty_write(u32 minor, const u8 *buf, usize size) {
 
 driver_t tty_driver = {
     .nr_devs = 1,
-    .irqs = nullptr,
-    .isr = nullptr,
     .read = tty_read,
     .write = tty_write,
 };
@@ -37,4 +35,11 @@ i32 init_tty(void) {
     }
 
     return 0;
+}
+
+i32 tty_putc(char c) {
+    i32 res = tty_write(0, (const u8 *) &c, 1);
+    if (res < 0)
+        return res;
+    return c;
 }

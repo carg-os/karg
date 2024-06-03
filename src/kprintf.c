@@ -2,12 +2,12 @@
 
 #include <dev.h>
 #include <stdarg.h>
+#include <tty.h>
 #include <types.h>
 
-/*
 static usize print_usize(usize val, i32 radix) {
     if (val == 0) {
-        dev_write(DEV_INIT(0, 0), "0", 1);
+        tty_putc('0');
         return 1;
     }
 
@@ -26,7 +26,7 @@ static usize print_usize(usize val, i32 radix) {
     }
 
     for (usize i = pos; i < sizeof(buf); i++) {
-        dev_putc(DEV_INIT(0, 0), buf[i]);
+        tty_putc(buf[i]);
     }
 
     return sizeof(buf) - pos;
@@ -36,7 +36,7 @@ static usize print_isize(isize val, i32 radix) {
     usize n = 0;
 
     if (val < 0) {
-        dev_putc(DEV_INIT(0, 0), '-');
+        tty_putc('-');
         n++;
         val = -val;
     }
@@ -50,9 +50,9 @@ static usize print_ptr(void *ptr) {
     for (usize i = sizeof(ptr) * 2; i > 0; i--) {
         u8 nibble = (usize) ptr >> ((i - 1) * 4) & 0xF;
         if (nibble < 10) {
-            dev_putc(DEV_INIT(0, 0), nibble + '0');
+            tty_putc(nibble + '0');
         } else {
-            dev_putc(DEV_INIT(0, 0), nibble - 10 + 'a');
+            tty_putc(nibble - 10 + 'a');
         }
     }
     return sizeof(ptr) * 2;
@@ -65,7 +65,7 @@ isize kprintf(const char *fmt, ...) {
 
     while (*fmt) {
         if (*fmt != '%') {
-            dev_putc(DEV_INIT(0, 0), *fmt);
+            tty_putc(*fmt);
             fmt++;
             n++;
             continue;
@@ -74,17 +74,17 @@ isize kprintf(const char *fmt, ...) {
         fmt++;
         switch (*fmt) {
         case '%':
-            dev_putc(DEV_INIT(0, 0), '%');
+            tty_putc('%');
             n++;
             break;
         case 'c':
-            dev_putc(DEV_INIT(0, 0), va_arg(args, isize));
+            tty_putc(va_arg(args, isize));
             n++;
             break;
         case 's': {
-            const char *s = va_arg(args, const char *);
-            for (; *s; s++) {
-                dev_putc(DEV_INIT(0, 0), *s);
+            const char *str = va_arg(args, const char *);
+            for (; *str; str++) {
+                tty_putc(*str);
                 n++;
             }
             break;
@@ -184,4 +184,3 @@ isize kprintf(const char *fmt, ...) {
     va_end(args);
     return n;
 }
-*/
