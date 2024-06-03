@@ -69,7 +69,7 @@ add_dependencies(karg linker-script)
 add_custom_target(linker-script DEPENDS kernel.ld)
 
 add_custom_command(OUTPUT kernel.ld
-    COMMAND ${CMAKE_C_COMPILER} -E -x c -D __LINKER__
+    COMMAND ${CMAKE_C_COMPILER} -E -x c
                 -I ${PROJECT_SOURCE_DIR}/${PLATFORM_INCLUDE}
                 ${PROJECT_SOURCE_DIR}/kernel.ld > kernel.ld
     MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/kernel.ld

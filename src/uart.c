@@ -5,123 +5,107 @@
 #include <plic.h>
 #include <sem.h>
 #include <trap.h>
+#include <tty.h>
 
-#define REG(reg) *((volatile u8 *) (UART_BASE0 + UART_REG_SIZE * (reg)))
+#define REG(num, reg)                                                          \
+    *((volatile u8 *) (UART_BASES[num] + UART_REG_SIZE * (reg)))
 #define THR 0
 #define RBR 0
 #define IER 1
 #define IIR 2
 #define FCR 2
 #define LSR 5
-#define USR 31
 
 #define IER_ERBFI 0x01
 
 #define LSR_THRE 0x20
 
-static sem_t rx_sem;
-static u8 rx_buf[UART_RX_BUF_SIZE];
-static usize rx_head = 0, rx_tail = 0;
-static usize cursor_pos = 0;
+typedef struct {
+    sem_t rx_sem;
+    u8 rx_buf[UART_RX_BUF_SIZE];
+    usize rx_head, rx_tail;
+    u32 cursor_pos;
+} uart_dev_t;
 
-static void uart_isr(u32 minor) {
-    if (REG(IIR) == 0xC7) {
-        REG(USR);
-        return;
-    }
+static uart_dev_t uart_devs[UART_NR_DEVS];
 
-    (void) minor;
-    u8 c = REG(RBR);
-
-    switch (c) {
-    case '\x7F':
-        c = '\b';
-        break;
+static void uart_isr(u32 num) {
+    uart_dev_t *dev = &uart_devs[num];
+    u8 byte = REG(num, RBR);
+    switch (byte) {
     case '\r':
-        c = '\n';
+        dev->rx_buf[dev->rx_tail++] = '\n';
+        dev->rx_tail %= UART_RX_BUF_SIZE;
+        sem_signaln(&dev->rx_sem, dev->cursor_pos + 1);
+        dev->cursor_pos = 0;
+        tty_putc('\n');
         break;
-    }
-
-    switch (c) {
-    case '\b':
-        if (cursor_pos > 0) {
-            if (rx_tail > 0) {
-                rx_tail--;
-            } else {
-                rx_tail = UART_RX_BUF_SIZE - 1;
+    case '\x7F':
+        if (dev->cursor_pos > 0) {
+            if (dev->rx_tail == 0) {
+                dev->rx_tail = UART_RX_BUF_SIZE;
             }
-
-            cursor_pos--;
-
-            dev_write((dev_t){.driver = &tty_driver, .num = 0},
-                      (const u8 *) "\b \b", 3);
+            dev->rx_tail--;
+            dev->cursor_pos--;
+            tty_putc('\b');
+            tty_putc(' ');
+            tty_putc('\n');
         }
         break;
     default:
-        rx_buf[rx_tail] = c;
-        rx_tail++;
-        rx_tail %= UART_RX_BUF_SIZE;
-
-        cursor_pos++;
-        if (c == '\n') {
-            sem_signaln(&rx_sem, cursor_pos);
-            cursor_pos = 0;
-        }
-
-        dev_write((dev_t){.driver = &tty_driver, .num = 0}, &c, 1);
-
+        dev->rx_buf[dev->rx_tail++] = byte;
+        dev->rx_tail %= UART_RX_BUF_SIZE;
+        dev->cursor_pos++;
+        tty_putc(byte);
         break;
     }
 }
 
-static isize uart_read(u32 minor, u8 *buf, usize size) {
-    (void) minor;
-
+static isize uart_read(u32 num, u8 *buf, usize size) {
+    uart_dev_t *dev = &uart_devs[num];
     for (usize i = 0; i < size; i++) {
-        sem_wait(&rx_sem);
-        buf[i] = rx_buf[rx_head];
-        rx_head++;
-        rx_head %= UART_RX_BUF_SIZE;
-
+        sem_wait(&dev->rx_sem);
+        buf[i] = dev->rx_buf[dev->rx_head++];
+        dev->rx_head %= UART_RX_BUF_SIZE;
         if (buf[i] == '\n')
             return i + 1;
     }
-
     return size;
 }
 
-static void uart_put_char(u8 c) {
-    while (!(REG(LSR) & LSR_THRE))
+static void uart_put_byte(u32 num, u8 byte) {
+    while (!(REG(num, LSR) & LSR_THRE))
         ;
-    REG(THR) = c;
+    REG(num, THR) = byte;
 }
 
-static isize uart_write(u32 minor, const u8 *buf, usize size) {
-    (void) minor;
-
+static isize uart_write(u32 num, const u8 *buf, usize size) {
     for (usize i = 0; i < size; i++) {
-        u8 c = buf[i];
-        if (c == '\n')
-            uart_put_char('\r');
-        uart_put_char(c);
+        u8 byte = buf[i];
+        if (byte == '\n')
+            uart_put_byte(num, '\r');
+        uart_put_byte(num, byte);
     }
-
     return size;
 }
 
 driver_t uart_driver = {
-    .nr_devs = 1,
+    .nr_devs = UART_NR_DEVS,
     .read = uart_read,
     .write = uart_write,
 };
 
 i32 init_uart(void) {
-    sem_init(&rx_sem);
-    i32 res = trap_register_isr(UART_IRQ0, uart_isr, 0);
-    if (res < 0)
-        return res;
-
-    plic_enable_irq(UART_IRQ0);
-    REG(IER) = IER_ERBFI;
+    for (u32 num = 0; num < UART_NR_DEVS; num++) {
+        sem_init(&uart_devs[num].rx_sem);
+        uart_devs[num].rx_head = 0;
+        uart_devs[num].rx_tail = 0;
+        uart_devs[num].cursor_pos = 0;
+        plic_enable_irq(UART_IRQS[num]);
+        REG(num, IER) = IER_ERBFI;
+        i32 res = trap_register_isr(UART_IRQS[num], uart_isr, num);
+        if (res < 0)
+            return res;
+    }
     return 0;
 }
