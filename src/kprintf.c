@@ -1,3 +1,4 @@
+/*
 #include <kprintf.h>
 
 #include <dev.h>
@@ -184,3 +185,4 @@ isize kprintf(const char *fmt, ...) {
     va_end(args);
     return n;
 }
+*/

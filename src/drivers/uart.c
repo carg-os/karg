@@ -1,11 +1,12 @@
+#include <drivers/uart.h>
+
 #include <config.h>
-#include <dev.h>
 #include <driver.h>
+#include <drivers/tty.h>
 #include <platform.h>
 #include <plic.h>
 #include <sem.h>
 #include <trap.h>
-#include <tty.h>
 
 #define REG(num, reg)                                                          \
     *((volatile u8 *) (UART_BASES[num] + UART_REG_SIZE * (reg)))
@@ -38,7 +39,7 @@ static void uart_isr(u32 num) {
         dev->rx_tail %= UART_RX_BUF_SIZE;
         sem_signaln(&dev->rx_sem, dev->cursor_pos + 1);
         dev->cursor_pos = 0;
-        tty_putc('\n');
+        tty_putc(num, '\n');
         break;
     case '\x7F':
         if (dev->cursor_pos > 0) {
@@ -47,16 +48,16 @@ static void uart_isr(u32 num) {
             }
             dev->rx_tail--;
             dev->cursor_pos--;
-            tty_putc('\b');
-            tty_putc(' ');
-            tty_putc('\n');
+            tty_putc(num, '\b');
+            tty_putc(num, ' ');
+            tty_putc(num, '\n');
         }
         break;
     default:
         dev->rx_buf[dev->rx_tail++] = byte;
         dev->rx_tail %= UART_RX_BUF_SIZE;
         dev->cursor_pos++;
-        tty_putc(byte);
+        tty_putc(num, byte);
         break;
     }
 }
@@ -104,6 +105,11 @@ i32 init_uart(void) {
         plic_enable_irq(UART_IRQS[num]);
         REG(num, IER) = IER_ERBFI;
         i32 res = trap_register_isr(UART_IRQS[num], uart_isr, num);
+        if (res < 0)
+            return res;
+        dev_t dev = {.driver = &uart_driver, .num = num};
+        tty_register_src(num, dev);
+        res = tty_register_sink(num, dev);
         if (res < 0)
             return res;
     }

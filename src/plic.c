@@ -10,9 +10,10 @@
 #define INTR_CLAIM 0x80401
 #define INTR_COMPLETION 0x80401
 
-void init_plic(void) {
+i32 init_plic(void) {
     csr_set_bits(sie, CSR_SIE_SEIE);
     REG(PRIO_THRESHOLD) = 0;
+    return 0;
 }
 
 void plic_enable_irq(u32 irq) {
