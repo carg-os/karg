@@ -7,13 +7,14 @@ endif()
 
 add_library(karg
     src/dev.c
-#    src/drivers/fb.c
-#    src/drivers/fbcon.c
+    src/drivers/fb.c
+    src/drivers/fbcon.c
     src/drivers/tty.c
     src/drivers/uart.c
-#    src/drivers/virtio-gpu.c
+    src/drivers/virtio-gpu.c
     src/entry.S
     src/fd.c
+    src/font.c
     src/init.c
     src/kmain.c
     src/kprintf.c

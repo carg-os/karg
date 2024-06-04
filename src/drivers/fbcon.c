@@ -1,8 +1,9 @@
 #include <drivers/fbcon.h>
 
-#include <driver.h>
-#include <fb.h>
+#include <drivers/fb.h>
+#include <drivers/tty.h>
 #include <font.h>
+#include <platform.h>
 
 #define DEFAULT_FG 0xFFF2EFDE
 #define DEFAULT_BG 0xFF202020
@@ -19,133 +20,145 @@ typedef struct {
 
 typedef struct {
     state_t state;
-    cursor_t cursor;
     u8 num;
+    cursor_t cursor;
     u32 fg, bg;
-} fbcon_states_t;
+} ctrl_blk_t;
 
-static void write_char(cursor_t cursor, char c) {
+static ctrl_blk_t ctrl_blks[FBCON_NR_DEVS];
+
+static void write_char(u32 num, char c) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (i32 y = 0; y < FONT_HEIGHT; y++) {
         for (i32 x = 0; x < FONT_WIDTH; x++) {
             if (font[(u8) c][y] & 1 << (FONT_WIDTH - 1 - x)) {
-                write_fb(cursor.x + x, cursor.y + y, fg);
+                fb_write_pix(num, ctrl_blk->cursor.x + x,
+                             ctrl_blk->cursor.y + y, ctrl_blk->fg);
             } else {
-                write_fb(cursor.x + x, cursor.y + y, bg);
+                fb_write_pix(num, ctrl_blk->cursor.x + x,
+                             ctrl_blk->cursor.y + y, ctrl_blk->bg);
             }
         }
     }
 }
 
-static void handle_char(char c) {
+static void handle_char(u32 num, char c) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     switch (c) {
     case '\b':
-        if (cursor.x > FONT_WIDTH)
-            cursor.x -= FONT_WIDTH;
+        if (ctrl_blk->cursor.x > FONT_WIDTH)
+            ctrl_blk->cursor.x -= FONT_WIDTH;
         break;
     case '\n':
-        cursor.x = 0;
-        cursor.y += FONT_HEIGHT;
+        ctrl_blk->cursor.x = 0;
+        ctrl_blk->cursor.y += FONT_HEIGHT;
         break;
     case '\x1B':
-        state = STATE_ESCAPE;
+        ctrl_blk->state = STATE_ESCAPE;
         break;
     default:
-        write_char(cursor, c);
-        fb_flush(cursor.y, FONT_HEIGHT);
-        cursor.x += FONT_WIDTH;
+        write_char(num, c);
+        fb_flush(num, ctrl_blk->cursor.y, FONT_HEIGHT);
+        ctrl_blk->cursor.x += FONT_WIDTH;
         break;
     }
 }
 
-static void fill_fb(cursor_t cursor, u32 width, u32 height, u32 color) {
-    for (u32 y = cursor.y; y < cursor.y + height; y++) {
-        for (u32 x = cursor.x; x < cursor.x + width; x++) {
-            write_fb(x, y, color);
+static void fill_fb(u32 num, u32 width, u32 height, u32 color) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
+    for (u32 y = ctrl_blk->cursor.y; y < ctrl_blk->cursor.y + height; y++) {
+        for (u32 x = ctrl_blk->cursor.x; x < ctrl_blk->cursor.x + width; x++) {
+            fb_write_pix(num, x, y, color);
         }
     }
 }
 
-void set_color(u8 num) {
-    switch (num) {
+void set_color(u32 num) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
+    switch (ctrl_blk->num) {
     case 0:
-        fg = DEFAULT_FG;
-        bg = DEFAULT_BG;
+        ctrl_blk->fg = DEFAULT_FG;
+        ctrl_blk->bg = DEFAULT_BG;
         break;
     case 31:
-        fg = 0xFFDE382B;
+        ctrl_blk->fg = 0xFFDE382B;
         break;
     case 33:
-        fg = 0xFFFFC706;
+        ctrl_blk->fg = 0xFFFFC706;
         break;
     case 36:
-        fg = 0xFF2CB5E9;
+        ctrl_blk->fg = 0xFF2CB5E9;
         break;
     case 90:
-        fg = 0xFF808080;
+        ctrl_blk->fg = 0xFF808080;
         break;
     }
 }
 
-static bool handle_escape_code(char c) {
+static bool handle_escape_code(u32 num, char c) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     switch (c) {
     case 'm':
         set_color(num);
         break;
-    case 'J':
-        cursor.y = 0;
-        fb_set_offset(0, 0);
-        fill_fb(cursor, fb_width, fb_height, DEFAULT_BG);
-        fb_flush(0, fb_height);
+    case 'J': {
+        ctrl_blk->cursor.y = 0;
+        u32 width, height;
+        fb_get_size(num, &width, &height);
+        fill_fb(num, width, height, DEFAULT_BG);
+        fb_flush(num, 0, height);
         break;
+    }
     case ';':
         return false;
     }
     return true;
 }
 
-static void fbcon_putc(char c) {
-    switch (state) {
+static void putc(u32 num, char c) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
+    switch (ctrl_blk->state) {
     case STATE_NORMAL:
-        handle_char(c);
+        handle_char(num, c);
         break;
     case STATE_ESCAPE:
         if ('0' <= c && c <= '9') {
-            num = c - '0';
-            state = STATE_NUM;
+            ctrl_blk->num = c - '0';
+            ctrl_blk->state = STATE_NUM;
         }
         break;
     case STATE_NUM:
         if ('0' <= c && c <= '9') {
-            num = num * 10 + c - '0';
+            ctrl_blk->num = ctrl_blk->num * 10 + c - '0';
         } else {
-            if (handle_escape_code(c)) {
-                state = STATE_NORMAL;
+            if (handle_escape_code(num, c)) {
+                ctrl_blk->state = STATE_NORMAL;
             } else {
-                state = STATE_ESCAPE;
+                ctrl_blk->state = STATE_ESCAPE;
             }
         }
         break;
     }
 }
 
-static isize fbcon_write(u32 minor, const u8 *buf, usize size) {
-    (void) minor;
+static isize write(u32 num, const u8 *buf, usize size) {
     for (usize i = 0; i < size; i++) {
-        fbcon_putc(buf[i]);
+        putc(num, buf[i]);
     }
     return size;
 }
 
-driver_t fbcon_driver = {
+static driver_t driver = {
     .nr_devs = 1,
     .read = nullptr,
-    .write = fbcon_write,
+    .write = write,
+    .ioctl = nullptr,
 };
 
 i32 init_fbcon(void) {
-    i32 res = init_fb(&fb_width, &fb_height);
-    if (res < 0)
-        return res;
-
+    ctrl_blks[0].fg = DEFAULT_FG;
+    ctrl_blks[0].bg = DEFAULT_BG;
+    dev_t dev = {.driver = &driver, .num = 0};
+    tty_register_sink(0, dev);
     return 0;
 }

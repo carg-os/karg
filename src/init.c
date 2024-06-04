@@ -4,6 +4,7 @@
 #include <drivers/fbcon.h>
 #include <drivers/tty.h>
 #include <drivers/uart.h>
+#include <drivers/virtio-gpu.h>
 #include <page_alloc.h>
 #include <plic.h>
 #include <sched.h>
@@ -17,15 +18,16 @@ static i32 (*const pre_init[])() = {
 };
 
 static i32 (*const init[])() = {
-    //    init_fb,
+    init_fb,
     init_timer,
     init_tty,
 };
 
 static i32 (*const post_init[])() = {
     init_uart,
-    //    init_fbcon,
+    init_fbcon,
     init_sched,
+    init_virtio_gpu,
 };
 
 i32 init_modules(void) {

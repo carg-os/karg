@@ -1,7 +1,7 @@
-#include <fb.h>
+#include <drivers/virtio-gpu.h>
 
-#include <driver.h>
-#include <font.h>
+#include <dev.h>
+#include <drivers/fb.h>
 #include <types.h>
 
 enum virtio_gpu_ctrl_type {
@@ -163,22 +163,17 @@ static struct virtio_gpu_resource_attach_backing attach_backing;
 static struct virtio_gpu_mem_entry gpu_mem_entry;
 static struct virtio_gpu_set_scanout set_scanout;
 static struct virtio_gpu_transfer_to_host_2d transfer;
-static struct virtio_gpu_resource_flush flush;
+static struct virtio_gpu_resource_flush res_flush;
 static struct virtio_gpu_ctrl_hdr hdr[5];
 
 #define FB_WIDTH 1600
 #define FB_HEIGHT 900
 #define FB_PITCH 1600 * 4
 
-u32 fb[FB_WIDTH * FB_HEIGHT];
+static u32 fb[FB_WIDTH * FB_HEIGHT];
 static usize offset = 0;
 
-i32 fb_set_offset(u32 x, u32 y) {
-    offset = y * FB_PITCH + x;
-    return 0;
-}
-
-i32 fb_flush(u32 y, u32 height) {
+static void flush(u32 y, u32 height) {
     while (avail.idx != used.idx)
         ;
     transfer.r.x = 0;
@@ -187,10 +182,10 @@ i32 fb_flush(u32 y, u32 height) {
     transfer.r.height = height;
     transfer.offset = offset + y * FB_PITCH;
 
-    flush.r.x = 0;
-    flush.r.y = y;
-    flush.r.width = FB_WIDTH;
-    flush.r.height = height;
+    res_flush.r.x = 0;
+    res_flush.r.y = y;
+    res_flush.r.width = FB_WIDTH;
+    res_flush.r.height = height;
 
     desc[0].addr = (usize) &transfer;
     desc[0].len = sizeof(transfer);
@@ -202,8 +197,8 @@ i32 fb_flush(u32 y, u32 height) {
     desc[1].flags = VIRTQ_DESC_F_WRITE;
     desc[1].next = 0;
 
-    desc[2].addr = (usize) &flush;
-    desc[2].len = sizeof(flush);
+    desc[2].addr = (usize) &res_flush;
+    desc[2].len = sizeof(res_flush);
     desc[2].flags = VIRTQ_DESC_F_NEXT;
     desc[2].next = 3;
 
@@ -215,14 +210,43 @@ i32 fb_flush(u32 y, u32 height) {
     avail.ring[avail.idx++ % 128] = 0;
     avail.ring[avail.idx++ % 128] = 2;
     REG(NOTIFY) = 0;
+}
 
+static i32 ioctl(u32 num, u32 req, va_list args) {
+    (void) num;
+    switch (req) {
+    case 0: {
+        u32 *width = va_arg(args, u32 *);
+        u32 *height = va_arg(args, u32 *);
+        *width = FB_WIDTH;
+        *height = FB_HEIGHT;
+        break;
+    }
+    case 1: {
+        u32 x = va_arg(args, u32);
+        u32 y = va_arg(args, u32);
+        u32 val = va_arg(args, u32);
+        fb[y * FB_WIDTH + x] = val;
+        break;
+    }
+    case 2: {
+        u32 y = va_arg(args, u32);
+        u32 height = va_arg(args, u32);
+        flush(y, height);
+        break;
+    }
+    }
     return 0;
 }
 
-i32 init_fb(u32 *width, u32 *height) {
-    *width = 1600;
-    *height = 900;
+static driver_t driver = {
+    .nr_devs = 1,
+    .read = nullptr,
+    .write = nullptr,
+    .ioctl = ioctl,
+};
 
+i32 init_virtio_gpu(void) {
     REG(STATUS) = 0;
     REG(STATUS) |= STATUS_ACK;
     REG(STATUS) |= STATUS_DRIVER;
@@ -280,15 +304,15 @@ i32 init_fb(u32 *width, u32 *height) {
     transfer.offset = 0;
     transfer.resource_id = 1;
 
-    flush.hdr.type = VIRTIO_GPU_CMD_RESOURCE_FLUSH;
-    flush.hdr.flags = 0;
-    flush.hdr.fence_id = 0;
-    flush.hdr.ctx_id = 0;
-    flush.r.x = 0;
-    flush.r.y = 0;
-    flush.r.width = FB_WIDTH;
-    flush.r.height = FB_HEIGHT;
-    flush.resource_id = 1;
+    res_flush.hdr.type = VIRTIO_GPU_CMD_RESOURCE_FLUSH;
+    res_flush.hdr.flags = 0;
+    res_flush.hdr.fence_id = 0;
+    res_flush.hdr.ctx_id = 0;
+    res_flush.r.x = 0;
+    res_flush.r.y = 0;
+    res_flush.r.width = FB_WIDTH;
+    res_flush.r.height = FB_HEIGHT;
+    res_flush.resource_id = 1;
 
     desc[0].addr = (usize) &create_2d;
     desc[0].len = sizeof(create_2d);
@@ -335,8 +359,8 @@ i32 init_fb(u32 *width, u32 *height) {
     desc[8].flags = VIRTQ_DESC_F_WRITE;
     desc[8].next = 0;
 
-    desc[9].addr = (usize) &flush;
-    desc[9].len = sizeof(flush);
+    desc[9].addr = (usize) &res_flush;
+    desc[9].len = sizeof(res_flush);
     desc[9].flags = VIRTQ_DESC_F_NEXT;
     desc[9].next = 10;
 
@@ -351,6 +375,12 @@ i32 init_fb(u32 *width, u32 *height) {
     avail.ring[avail.idx++] = 7;
     avail.ring[avail.idx++] = 9;
     REG(NOTIFY) = 0;
+
+    dev_t dev = {
+        .driver = &driver,
+        .num = 0,
+    };
+    fb_register_dev(dev);
 
     return 0;
 }

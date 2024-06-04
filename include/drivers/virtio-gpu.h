@@ -2,4 +2,4 @@
 
 #include <types.h>
 
-i32 init_fbcon(void);
+i32 init_virtio_gpu(void);

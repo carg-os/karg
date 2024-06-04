@@ -91,10 +91,11 @@ static isize write(u32 num, const u8 *buf, usize size) {
     return size;
 }
 
-driver_t uart_driver = {
+static driver_t driver = {
     .nr_devs = UART_NR_DEVS,
     .read = read,
     .write = write,
+    .ioctl = nullptr,
 };
 
 i32 init_uart(void) {
@@ -108,7 +109,7 @@ i32 init_uart(void) {
         i32 res = trap_register_isr(UART_IRQS[num], isr, num);
         if (res < 0)
             return res;
-        dev_t dev = {.driver = &uart_driver, .num = num};
+        dev_t dev = {.driver = &driver, .num = num};
         tty_register_src(num, dev);
         res = tty_register_sink(num, dev);
         if (res < 0)

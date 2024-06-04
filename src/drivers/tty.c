@@ -31,13 +31,14 @@ driver_t tty_driver = {
     .nr_devs = TTY_NR_DEVS,
     .read = read,
     .write = write,
+    .ioctl = nullptr,
 };
 
 i32 init_tty(void) { return 0; }
 
 i32 tty_register_src(u32 num, dev_t src) {
     if (num >= TTY_NR_DEVS)
-        return -ENXIO;
+        return -EAGAIN;
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     ctrl_blk->src = src;
     return 0;
@@ -45,9 +46,9 @@ i32 tty_register_src(u32 num, dev_t src) {
 
 i32 tty_register_sink(u32 num, dev_t sink) {
     if (num >= TTY_NR_DEVS)
-        return -ENXIO;
+        return -EAGAIN;
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
-    if (ctrl_blk->nr_sinks >= TTY_NR_DEVS)
+    if (ctrl_blk->nr_sinks >= TTY_MAX_SINK)
         return -EAGAIN;
     ctrl_blk->sinks[ctrl_blk->nr_sinks++] = sink;
     return 0;
