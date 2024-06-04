@@ -26,85 +26,86 @@ typedef struct {
     u8 rx_buf[UART_RX_BUF_SIZE];
     usize rx_head, rx_tail;
     u32 cursor_pos;
-} uart_dev_t;
+} ctrl_blk_t;
 
-static uart_dev_t uart_devs[UART_NR_DEVS];
+static ctrl_blk_t ctrl_blks[UART_NR_DEVS];
 
-static void uart_isr(u32 num) {
-    uart_dev_t *dev = &uart_devs[num];
+static void isr(u32 num) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     u8 byte = REG(num, RBR);
     switch (byte) {
     case '\r':
-        dev->rx_buf[dev->rx_tail++] = '\n';
-        dev->rx_tail %= UART_RX_BUF_SIZE;
-        sem_signaln(&dev->rx_sem, dev->cursor_pos + 1);
-        dev->cursor_pos = 0;
+        ctrl_blk->rx_buf[ctrl_blk->rx_tail++] = '\n';
+        ctrl_blk->rx_tail %= UART_RX_BUF_SIZE;
+        ctrl_blk->cursor_pos++;
+        sem_signaln(&ctrl_blk->rx_sem, ctrl_blk->cursor_pos);
+        ctrl_blk->cursor_pos = 0;
         tty_putc(num, '\n');
         break;
     case '\x7F':
-        if (dev->cursor_pos > 0) {
-            if (dev->rx_tail == 0) {
-                dev->rx_tail = UART_RX_BUF_SIZE;
+        if (ctrl_blk->cursor_pos > 0) {
+            if (ctrl_blk->rx_tail == 0) {
+                ctrl_blk->rx_tail = UART_RX_BUF_SIZE;
             }
-            dev->rx_tail--;
-            dev->cursor_pos--;
+            ctrl_blk->rx_tail--;
+            ctrl_blk->cursor_pos--;
             tty_putc(num, '\b');
             tty_putc(num, ' ');
             tty_putc(num, '\n');
         }
         break;
     default:
-        dev->rx_buf[dev->rx_tail++] = byte;
-        dev->rx_tail %= UART_RX_BUF_SIZE;
-        dev->cursor_pos++;
+        ctrl_blk->rx_buf[ctrl_blk->rx_tail++] = byte;
+        ctrl_blk->rx_tail %= UART_RX_BUF_SIZE;
+        ctrl_blk->cursor_pos++;
         tty_putc(num, byte);
         break;
     }
 }
 
-static isize uart_read(u32 num, u8 *buf, usize size) {
-    uart_dev_t *dev = &uart_devs[num];
+static isize read(u32 num, u8 *buf, usize size) {
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (usize i = 0; i < size; i++) {
-        sem_wait(&dev->rx_sem);
-        buf[i] = dev->rx_buf[dev->rx_head++];
-        dev->rx_head %= UART_RX_BUF_SIZE;
+        sem_wait(&ctrl_blk->rx_sem);
+        buf[i] = ctrl_blk->rx_buf[ctrl_blk->rx_head++];
+        ctrl_blk->rx_head %= UART_RX_BUF_SIZE;
         if (buf[i] == '\n')
             return i + 1;
     }
     return size;
 }
 
-static void uart_put_byte(u32 num, u8 byte) {
+static void put_byte(u32 num, u8 byte) {
     while (!(REG(num, LSR) & LSR_THRE))
         ;
     REG(num, THR) = byte;
 }
 
-static isize uart_write(u32 num, const u8 *buf, usize size) {
+static isize write(u32 num, const u8 *buf, usize size) {
     for (usize i = 0; i < size; i++) {
         u8 byte = buf[i];
         if (byte == '\n')
-            uart_put_byte(num, '\r');
-        uart_put_byte(num, byte);
+            put_byte(num, '\r');
+        put_byte(num, byte);
     }
     return size;
 }
 
 driver_t uart_driver = {
     .nr_devs = UART_NR_DEVS,
-    .read = uart_read,
-    .write = uart_write,
+    .read = read,
+    .write = write,
 };
 
 i32 init_uart(void) {
     for (u32 num = 0; num < UART_NR_DEVS; num++) {
-        sem_init(&uart_devs[num].rx_sem);
-        uart_devs[num].rx_head = 0;
-        uart_devs[num].rx_tail = 0;
-        uart_devs[num].cursor_pos = 0;
+        sem_init(&ctrl_blks[num].rx_sem);
+        ctrl_blks[num].rx_head = 0;
+        ctrl_blks[num].rx_tail = 0;
+        ctrl_blks[num].cursor_pos = 0;
         plic_enable_irq(UART_IRQS[num]);
         REG(num, IER) = IER_ERBFI;
-        i32 res = trap_register_isr(UART_IRQS[num], uart_isr, num);
+        i32 res = trap_register_isr(UART_IRQS[num], isr, num);
         if (res < 0)
             return res;
         dev_t dev = {.driver = &uart_driver, .num = num};

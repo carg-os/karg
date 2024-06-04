@@ -1,8 +1,8 @@
+#include <drivers/fbcon.h>
+
 #include <driver.h>
 #include <fb.h>
 #include <font.h>
-
-static u32 fb_width, fb_height;
 
 #define DEFAULT_FG 0xFFF2EFDE
 #define DEFAULT_BG 0xFF202020
@@ -17,12 +17,12 @@ typedef struct {
     u32 x, y;
 } cursor_t;
 
-static state_t state = STATE_NORMAL;
-static cursor_t cursor;
-static u8 num = 0;
-static u32 fg = DEFAULT_FG, bg = DEFAULT_BG;
-
-static void write_fb(u32 x, u32 y, u32 color) { fb[y * fb_width + x] = color; }
+typedef struct {
+    state_t state;
+    cursor_t cursor;
+    u8 num;
+    u32 fg, bg;
+} fbcon_states_t;
 
 static void write_char(cursor_t cursor, char c) {
     for (i32 y = 0; y < FONT_HEIGHT; y++) {

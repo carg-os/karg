@@ -7,7 +7,7 @@ endif()
 
 add_library(karg
     src/dev.c
-    src/driver.c
+#    src/drivers/fb.c
 #    src/drivers/fbcon.c
     src/drivers/tty.c
     src/drivers/uart.c
