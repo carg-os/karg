@@ -24,3 +24,9 @@ i32 dev_ioctl(dev_t dev, u32 req, ...) {
     va_end(args);
     return res;
 }
+
+i32 dev_vioctl(dev_t dev, u32 req, va_list args) {
+    if (dev.num >= dev.driver->nr_devs || !dev.driver->ioctl)
+        return -ENXIO;
+    return dev.driver->ioctl(dev.num, req, args);
+}

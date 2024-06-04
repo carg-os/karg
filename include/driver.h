@@ -11,3 +11,4 @@ typedef struct {
 } driver_t;
 
 extern driver_t tty_driver;
+extern driver_t fb_driver;

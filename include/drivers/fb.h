@@ -3,8 +3,10 @@
 #include <dev.h>
 #include <types.h>
 
+#define FB_GET_SCREEN_INFO 0
+#define FB_WRITE_PIX 1
+#define FB_FLUSH 2
+#define FB_REGISTER_DEV 3
+
 i32 init_fb(void);
 i32 fb_register_dev(dev_t dev);
-i32 fb_get_size(u32 num, u32 *width, u32 *height);
-i32 fb_write_pix(u32 num, u32 x, u32 y, u32 val);
-i32 fb_flush(u32 num, u32 y, u32 height);

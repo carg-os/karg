@@ -31,12 +31,13 @@ static void write_char(u32 num, char c) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (i32 y = 0; y < FONT_HEIGHT; y++) {
         for (i32 x = 0; x < FONT_WIDTH; x++) {
+            dev_t fb_dev = {.driver = &fb_driver, .num = num};
             if (font[(u8) c][y] & 1 << (FONT_WIDTH - 1 - x)) {
-                fb_write_pix(num, ctrl_blk->cursor.x + x,
-                             ctrl_blk->cursor.y + y, ctrl_blk->fg);
+                dev_ioctl(fb_dev, FB_WRITE_PIX, ctrl_blk->cursor.x + x,
+                          ctrl_blk->cursor.y + y, ctrl_blk->fg);
             } else {
-                fb_write_pix(num, ctrl_blk->cursor.x + x,
-                             ctrl_blk->cursor.y + y, ctrl_blk->bg);
+                dev_ioctl(fb_dev, FB_WRITE_PIX, ctrl_blk->cursor.x + x,
+                          ctrl_blk->cursor.y + y, ctrl_blk->bg);
             }
         }
     }
@@ -56,11 +57,16 @@ static void handle_char(u32 num, char c) {
     case '\x1B':
         ctrl_blk->state = STATE_ESCAPE;
         break;
-    default:
+    default: {
         write_char(num, c);
-        fb_flush(num, ctrl_blk->cursor.y, FONT_HEIGHT);
+        dev_t fb_dev = {
+            .driver = &fb_driver,
+            .num = num,
+        };
+        dev_ioctl(fb_dev, FB_FLUSH, ctrl_blk->cursor.y, FONT_HEIGHT);
         ctrl_blk->cursor.x += FONT_WIDTH;
         break;
+    }
     }
 }
 
@@ -68,7 +74,8 @@ static void fill_fb(u32 num, u32 width, u32 height, u32 color) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (u32 y = ctrl_blk->cursor.y; y < ctrl_blk->cursor.y + height; y++) {
         for (u32 x = ctrl_blk->cursor.x; x < ctrl_blk->cursor.x + width; x++) {
-            fb_write_pix(num, x, y, color);
+            dev_t fb_dev = {.driver = &fb_driver, .num = num};
+            dev_ioctl(fb_dev, FB_WRITE_PIX, x, y, color);
         }
     }
 }
@@ -103,10 +110,14 @@ static bool handle_escape_code(u32 num, char c) {
         break;
     case 'J': {
         ctrl_blk->cursor.y = 0;
+        dev_t fb_dev = {
+            .driver = &fb_driver,
+            .num = num,
+        };
         u32 width, height;
-        fb_get_size(num, &width, &height);
+        dev_ioctl(fb_dev, FB_GET_SCREEN_INFO, &width, &height);
         fill_fb(num, width, height, DEFAULT_BG);
-        fb_flush(num, 0, height);
+        dev_ioctl(fb_dev, FB_FLUSH, 0, height);
         break;
     }
     case ';':
@@ -156,9 +167,16 @@ static driver_t driver = {
 };
 
 i32 init_fbcon(void) {
-    ctrl_blks[0].fg = DEFAULT_FG;
-    ctrl_blks[0].bg = DEFAULT_BG;
-    dev_t dev = {.driver = &driver, .num = 0};
-    tty_register_sink(0, dev);
+    for (u32 num = 0; num < fb_driver.nr_devs; num++) {
+        ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
+        ctrl_blk->state = STATE_NORMAL;
+        ctrl_blk->cursor.x = 0;
+        ctrl_blk->cursor.y = 0;
+        ctrl_blk->fg = DEFAULT_FG;
+        ctrl_blk->bg = DEFAULT_BG;
+
+        dev_t dev = {.driver = &driver, .num = num};
+        tty_register_sink(num, dev);
+    }
     return 0;
 }

@@ -25,9 +25,12 @@ static i32 (*const init[])() = {
 
 static i32 (*const post_init[])() = {
     init_uart,
-    init_fbcon,
     init_sched,
     init_virtio_gpu,
+};
+
+static i32 (*const layer_init[])() = {
+    init_fbcon,
 };
 
 i32 init_modules(void) {
@@ -45,6 +48,12 @@ i32 init_modules(void) {
 
     for (usize i = 0; i < sizeof(post_init) / sizeof(post_init[0]); i++) {
         i32 res = post_init[i]();
+        if (res < 0)
+            return res;
+    }
+
+    for (usize i = 0; i < sizeof(layer_init) / sizeof(layer_init[0]); i++) {
+        i32 res = layer_init[i]();
         if (res < 0)
             return res;
     }
