@@ -31,7 +31,7 @@ typedef struct proc {
     list_node_t children;
     list_node_t zombie_children;
 
-    fd_t fds[PROC_MAX_FD + 1];
+    fd_t fds[PROC_FD_CAPACITY];
 
     proc_state_t state;
     i32 exit_status;

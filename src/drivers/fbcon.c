@@ -1,9 +1,10 @@
 #include <drivers/fbcon.h>
 
+#include <config.h>
+#include <dev.h>
 #include <drivers/fb.h>
 #include <drivers/tty.h>
 #include <font.h>
-#include <platform.h>
 
 #define DEFAULT_FG 0xFFF2EFDE
 #define DEFAULT_BG 0xFF202020
@@ -25,7 +26,7 @@ typedef struct {
     u32 fg, bg;
 } ctrl_blk_t;
 
-static ctrl_blk_t ctrl_blks[FBCON_NR_DEVS];
+static ctrl_blk_t ctrl_blks[FB_DEV_CAPACITY];
 
 static void write_char(u32 num, char c) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
@@ -176,7 +177,9 @@ i32 init_fbcon(void) {
         ctrl_blk->bg = DEFAULT_BG;
 
         dev_t dev = {.driver = &driver, .num = num};
-        tty_register_sink(num, dev);
+        i32 res = tty_register_sink(num, dev);
+        if (res < 0)
+            return res;
     }
     return 0;
 }

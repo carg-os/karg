@@ -1,7 +1,7 @@
 #include <drivers/uart.h>
 
 #include <config.h>
-#include <driver.h>
+#include <dev.h>
 #include <drivers/tty.h>
 #include <platform.h>
 #include <plic.h>
@@ -32,6 +32,7 @@ static ctrl_blk_t ctrl_blks[UART_NR_DEVS];
 
 static void isr(u32 num) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
+    dev_t tty_dev = {.driver = &tty_driver, .num = num};
     u8 byte = REG(num, RBR);
     switch (byte) {
     case '\r':
@@ -40,7 +41,7 @@ static void isr(u32 num) {
         ctrl_blk->cursor_pos++;
         sem_signaln(&ctrl_blk->rx_sem, ctrl_blk->cursor_pos);
         ctrl_blk->cursor_pos = 0;
-        tty_putc(num, '\n');
+        dev_write(tty_dev, (const u8 *) "\n", 1);
         break;
     case '\x7F':
         if (ctrl_blk->cursor_pos > 0) {
@@ -49,16 +50,14 @@ static void isr(u32 num) {
             }
             ctrl_blk->rx_tail--;
             ctrl_blk->cursor_pos--;
-            tty_putc(num, '\b');
-            tty_putc(num, ' ');
-            tty_putc(num, '\n');
+            dev_write(tty_dev, (const u8 *) "\b \b", 3);
         }
         break;
     default:
         ctrl_blk->rx_buf[ctrl_blk->rx_tail++] = byte;
         ctrl_blk->rx_tail %= UART_RX_BUF_SIZE;
         ctrl_blk->cursor_pos++;
-        tty_putc(num, byte);
+        dev_write(tty_dev, &byte, 1);
         break;
     }
 }

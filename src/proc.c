@@ -39,7 +39,7 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     list_init_head(&proc->children);
     list_init_head(&proc->zombie_children);
 
-    for (usize i = 0; i <= PROC_MAX_FD; i++) {
+    for (usize i = 0; i < PROC_FD_CAPACITY; i++) {
         proc->fds[i].flags = 0;
     }
     proc->fds[0].flags = FD_FLAG_ALLOCATED | FD_FLAG_READABLE;

@@ -11,4 +11,4 @@ typedef struct {
     dev_t dev;
 } fd_t;
 
-bool is_bad_fd(isize fd);
+bool is_bad_fd(i32 fd);

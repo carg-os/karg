@@ -166,9 +166,9 @@ static struct virtio_gpu_transfer_to_host_2d transfer;
 static struct virtio_gpu_resource_flush res_flush;
 static struct virtio_gpu_ctrl_hdr hdr[5];
 
-#define FB_WIDTH 1600
-#define FB_HEIGHT 900
-#define FB_PITCH 1600 * 4
+#define FB_WIDTH 1920
+#define FB_HEIGHT 1080
+#define FB_PITCH 1920 * 4
 
 static u32 fb[FB_WIDTH * FB_HEIGHT];
 static usize offset = 0;

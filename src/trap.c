@@ -1,9 +1,8 @@
 #include <trap.h>
 
+#include <config.h>
 #include <csr.h>
-#include <driver.h>
 #include <errno.h>
-#include <kprintf.h>
 #include <plic.h>
 #include <rv.h>
 #include <syscall.h>
@@ -15,7 +14,7 @@ typedef struct {
     u32 num;
 } isr_entry;
 
-static isr_entry isr_entries[256];
+static isr_entry isr_entries[TRAP_ISR_CAPACITY];
 static u32 nr_isr_entries;
 
 i32 init_trap(void) {

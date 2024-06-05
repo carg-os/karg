@@ -4,9 +4,6 @@
 
 #define PLIC_BASE 0x0C000000
 
-#define FBCON_NR_DEVS 1
-#define FB_NR_DEVS 1
-#define TTY_NR_DEVS 1
 #define UART_REG_SIZE 1
 #define UART_NR_DEVS 1
 extern usize UART_BASES[UART_NR_DEVS];

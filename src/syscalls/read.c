@@ -4,7 +4,7 @@
 #include <sched.h>
 
 isize sys_read(const trapframe_t *frame) {
-    isize fd = frame->a0;
+    i32 fd = frame->a0;
     u8 *buf = (u8 *) frame->a1;
     usize size = frame->a2;
     if (is_bad_fd(fd))
