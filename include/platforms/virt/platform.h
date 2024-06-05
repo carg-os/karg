@@ -10,5 +10,3 @@ extern usize UART_BASES[UART_NR_DEVS];
 extern u32 UART_IRQS[UART_NR_DEVS];
 
 #define TIMER_FREQ 10000000
-
-i32 init_platform(void);

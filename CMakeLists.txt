@@ -9,15 +9,14 @@ add_executable(karg
     src/dev.c
     src/drivers/fb.c
     src/drivers/fbcon.c
+    src/drivers/font.c
     src/drivers/tty.c
     src/drivers/uart.c
     src/drivers/virtio-gpu.c
     src/entry.S
     src/fd.c
-    src/font.c
     src/init.c
     src/kmain.c
-    src/kprintf.c
     src/mm/kalloc.c
     src/mm/page_alloc.c
     src/plic.c
@@ -43,19 +42,9 @@ add_executable(karg
 
 if (PLATFORM STREQUAL VIRT)
     target_sources(karg PRIVATE
-        src/platforms/virt/platform.c
+        src/platforms/virt.c
     )
     set(PLATFORM_INCLUDE include/platforms/virt)
-elseif (PLATFORM STREQUAL CV1800B)
-    target_sources(karg PRIVATE
-        src/platforms/cv1800b/platform.c
-    )
-    set(PLATFORM_INCLUDE include/platforms/cv1800b)
-elseif (PLATFORM STREQUAL D1)
-    target_sources(karg PRIVATE
-        src/platforms/d1/platform.c
-    )
-    set(PLATFORM_INCLUDE include/platforms/d1)
 endif()
 
 add_dependencies(karg linker-script)
