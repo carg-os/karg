@@ -1,6 +1,7 @@
 #include <sched.h>
 
 #include <config.h>
+#include <init.h>
 
 static list_node_t ready_queue = LIST_HEAD_INIT(ready_queue);
 static proc_t idle_proc;
@@ -14,7 +15,7 @@ void idle_task(void) {
     }
 }
 
-i32 init_sched(void) {
+static i32 init(void) {
     i32 res =
         proc_init(&idle_proc, idle_task, PROC_FLAG_KERNEL, nullptr, 0, nullptr);
     if (res < 0)
@@ -24,6 +25,8 @@ i32 init_sched(void) {
     timer_init(&timer);
     return 0;
 }
+
+MODULE_POST_INIT(init);
 
 void sched_update_state(proc_t *proc, proc_state_t state) {
     if (proc->state == state)

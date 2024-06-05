@@ -2,6 +2,7 @@
 
 #include <dev.h>
 #include <drivers/fb.h>
+#include <init.h>
 #include <types.h>
 
 enum virtio_gpu_ctrl_type {
@@ -246,7 +247,7 @@ static driver_t driver = {
     .ioctl = ioctl,
 };
 
-i32 init_virtio_gpu(void) {
+static i32 init(void) {
     REG(STATUS) = 0;
     REG(STATUS) |= STATUS_ACK;
     REG(STATUS) |= STATUS_DRIVER;
@@ -384,3 +385,5 @@ i32 init_virtio_gpu(void) {
 
     return 0;
 }
+
+MODULE_POST_INIT(init);

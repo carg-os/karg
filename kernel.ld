@@ -5,8 +5,18 @@ SECTIONS {
     . = BOOT_ENTRY_BASE;
 
     .init : {
-        *(.init .init.*)
+        *(.init)
     }
+
+    . = ALIGN(4K);
+    PROVIDE(_init_start = .);
+    .init.init : {
+        *(.init.pre_init)
+        *(.init.init)
+        *(.init.post_init)
+        *(.init.layer_init)
+    }
+    PROVIDE(_init_end = .);
 
     .text : {
         *(.text .text.*)

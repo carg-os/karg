@@ -5,7 +5,7 @@ if (NOT PLATFORM)
     set (PLATFORM VIRT)
 endif()
 
-add_library(karg
+add_executable(karg
     src/dev.c
     src/drivers/fb.c
     src/drivers/fbcon.c
@@ -40,37 +40,26 @@ add_library(karg
     src/trap.c
     src/trap.S
 )
+
 if (PLATFORM STREQUAL VIRT)
-     target_sources(karg PRIVATE
-#         src/platforms/virt/fb.c
-#         src/platforms/virt/font.c
-         src/platforms/virt/platform.c
-#         src/platforms/virt/tty.c
-     )
+    target_sources(karg PRIVATE
+        src/platforms/virt/platform.c
+    )
     set(PLATFORM_INCLUDE include/platforms/virt)
 elseif (PLATFORM STREQUAL CV1800B)
-     target_sources(karg PRIVATE
-         src/platforms/cv1800b/platform.c
-#         src/platforms/cv1800b/tty.c
-     )
-     set(PLATFORM_INCLUDE include/platforms/cv1800b)
+    target_sources(karg PRIVATE
+        src/platforms/cv1800b/platform.c
+    )
+    set(PLATFORM_INCLUDE include/platforms/cv1800b)
 elseif (PLATFORM STREQUAL D1)
-     target_sources(karg PRIVATE
-#         src/platforms/d1/ccu.c
-#         src/platforms/d1/de.c
-#         src/platforms/d1/fb.c
-#         src/platforms/d1/font.c
-#         src/platforms/d1/hdmi.c
-         src/platforms/d1/platform.c
-#         src/platforms/d1/tty.c
-     )
+    target_sources(karg PRIVATE
+        src/platforms/d1/platform.c
+    )
     set(PLATFORM_INCLUDE include/platforms/d1)
 endif()
 
 add_dependencies(karg linker-script)
-
 add_custom_target(linker-script DEPENDS kernel.ld)
-
 add_custom_command(OUTPUT kernel.ld
     COMMAND ${CMAKE_C_COMPILER} -E -x c
                 -I ${PROJECT_SOURCE_DIR}/${PLATFORM_INCLUDE}
@@ -80,11 +69,13 @@ add_custom_command(OUTPUT kernel.ld
 
 set_property(TARGET karg PROPERTY C_STANDARD 23)
 set_property(TARGET karg PROPERTY COMPILE_WARNING_AS_ERROR ON)
+set_property(TARGET karg PROPERTY LINK_DEPENDS ${PROJECT_BINARY_DIR}/kernel.ld)
 target_compile_options(karg PRIVATE
     -ffreestanding
     -mcmodel=medany
     -Wall
     -Wextra
 )
+target_link_options(karg PRIVATE -nostdlib -T kernel.ld)
 target_include_directories(karg PRIVATE include ${PLATFORM_INCLUDE})
 target_compile_definitions(karg PRIVATE PLATFORM_${PLATFORM})

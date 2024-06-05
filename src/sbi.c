@@ -8,14 +8,14 @@ typedef struct {
 
 sbi_res_t sbi_ecall(i32 eid, i32 fid, usize arg0, usize arg1, usize arg2,
                     usize arg3, usize arg4, usize arg5) {
-    register size_t a0 asm("a0") = arg0;
-    register size_t a1 asm("a1") = arg1;
-    register size_t a2 asm("a2") = arg2;
-    register size_t a3 asm("a3") = arg3;
-    register size_t a4 asm("a4") = arg4;
-    register size_t a5 asm("a5") = arg5;
-    register size_t a6 asm("a6") = fid;
-    register size_t a7 asm("a7") = eid;
+    register usize a0 asm("a0") = arg0;
+    register usize a1 asm("a1") = arg1;
+    register usize a2 asm("a2") = arg2;
+    register usize a3 asm("a3") = arg3;
+    register usize a4 asm("a4") = arg4;
+    register usize a5 asm("a5") = arg5;
+    register usize a6 asm("a6") = fid;
+    register usize a7 asm("a7") = eid;
     asm volatile("ecall"
                  : "+r"(a0), "+r"(a1)
                  : "r"(a2), "r"(a3), "r"(a4), "r"(a5), "r"(a6), "r"(a7));

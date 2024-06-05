@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <errno.h>
+#include <init.h>
 
 typedef struct {
     dev_t dev;
@@ -21,7 +22,9 @@ driver_t fb_driver = {
     .ioctl = ioctl,
 };
 
-i32 init_fb(void) { return 0; }
+static i32 init(void) { return 0; }
+
+MODULE_INIT(init);
 
 i32 fb_register_dev(dev_t dev) {
     if (fb_driver.nr_devs == FB_DEV_CAPACITY)

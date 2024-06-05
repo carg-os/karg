@@ -5,6 +5,7 @@
 #include <drivers/fb.h>
 #include <drivers/tty.h>
 #include <font.h>
+#include <init.h>
 
 #define DEFAULT_FG 0xFFF2EFDE
 #define DEFAULT_BG 0xFF202020
@@ -167,7 +168,7 @@ static driver_t driver = {
     .ioctl = nullptr,
 };
 
-i32 init_fbcon(void) {
+static i32 init(void) {
     for (u32 num = 0; num < fb_driver.nr_devs; num++) {
         ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
         ctrl_blk->state = STATE_NORMAL;
@@ -183,3 +184,5 @@ i32 init_fbcon(void) {
     }
     return 0;
 }
+
+MODULE_LAYER_INIT(init);

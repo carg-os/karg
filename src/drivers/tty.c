@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <errno.h>
+#include <init.h>
 
 typedef struct {
     dev_t src;
@@ -33,7 +34,9 @@ driver_t tty_driver = {
     .ioctl = nullptr,
 };
 
-i32 init_tty(void) { return 0; }
+static i32 init(void) { return 0; }
+
+MODULE_INIT(init);
 
 static void lazy_init_ctrl_blks(u32 num) {
     if (num < tty_driver.nr_devs)

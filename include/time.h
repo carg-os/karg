@@ -1,11 +1,10 @@
 #pragma once
 
 #include <csr.h>
-#include <limits.h>
 #include <types.h>
 
 #define NS_IN_SEC 1000000000ULL
-#define TIME_MAX UINT64_MAX
+#define TIME_MAX U64_MAX
 
 typedef u64 time_t;
 

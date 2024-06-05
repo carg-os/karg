@@ -3,6 +3,7 @@
 #include <config.h>
 #include <csr.h>
 #include <errno.h>
+#include <init.h>
 #include <plic.h>
 #include <rv.h>
 #include <syscall.h>
@@ -17,11 +18,13 @@ typedef struct {
 static isr_entry isr_entries[TRAP_ISR_CAPACITY];
 static u32 nr_isr_entries;
 
-i32 init_trap(void) {
+static i32 init(void) {
     void trap_entry(void);
     csr_write(stvec, trap_entry);
     return 0;
 }
+
+MODULE_PRE_INIT(init);
 
 i32 trap_register_isr(u32 irq, void (*isr)(u32 num), u32 num) {
     isr_entries[nr_isr_entries++] = (isr_entry){

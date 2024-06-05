@@ -1,6 +1,7 @@
 #include <plic.h>
 
 #include <csr.h>
+#include <init.h>
 #include <platform.h>
 
 #define REG(reg) *((volatile u32 *) PLIC_BASE + (reg))
@@ -10,11 +11,13 @@
 #define INTR_CLAIM 0x80401
 #define INTR_COMPLETION 0x80401
 
-i32 init_plic(void) {
+static i32 init(void) {
     csr_set_bits(sie, CSR_SIE_SEIE);
     REG(PRIO_THRESHOLD) = 0;
     return 0;
 }
+
+MODULE_PRE_INIT(init);
 
 void plic_enable_irq(u32 irq) {
     REG(INTR_ENABLE(irq)) |= 1 << irq % 32;

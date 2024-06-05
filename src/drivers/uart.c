@@ -3,6 +3,7 @@
 #include <config.h>
 #include <dev.h>
 #include <drivers/tty.h>
+#include <init.h>
 #include <platform.h>
 #include <plic.h>
 #include <sem.h>
@@ -97,7 +98,7 @@ static driver_t driver = {
     .ioctl = nullptr,
 };
 
-i32 init_uart(void) {
+static i32 init(void) {
     for (u32 num = 0; num < UART_NR_DEVS; num++) {
         sem_init(&ctrl_blks[num].rx_sem);
         ctrl_blks[num].rx_head = 0;
@@ -116,3 +117,5 @@ i32 init_uart(void) {
     }
     return 0;
 }
+
+MODULE_POST_INIT(init);

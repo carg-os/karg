@@ -2,16 +2,19 @@
 
 #include <csr.h>
 #include <errno.h>
+#include <init.h>
 #include <kalloc.h>
 #include <platform.h>
 #include <sbi.h>
 
 static list_node_t wait_queue = LIST_HEAD_INIT(wait_queue);
 
-i32 init_timer(void) {
+static i32 init(void) {
     csr_set_bits(sie, CSR_SIE_STIE);
     return sbi_set_timer(TIME_MAX);
 }
+
+MODULE_INIT(init);
 
 void timer_init(timer_t *timer) { list_init_head(&timer->node); }
 

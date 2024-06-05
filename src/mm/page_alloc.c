@@ -1,13 +1,14 @@
 #include <page_alloc.h>
 
 #include <config.h>
+#include <init.h>
 #include <list.h>
 
 extern u8 _heap_start[KHEAP_SIZE];
 
 static list_node_t free_list = LIST_HEAD_INIT(free_list);
 
-i32 init_page_alloc(void) {
+static i32 init(void) {
     list_node_t *node = (list_node_t *) _heap_start;
     while ((u8 *) node < _heap_start + KHEAP_SIZE) {
         list_push_back(&free_list, node);
@@ -15,6 +16,8 @@ i32 init_page_alloc(void) {
     }
     return 0;
 }
+
+MODULE_PRE_INIT(init);
 
 void *page_alloc(void) {
     if (list_empty(&free_list))
