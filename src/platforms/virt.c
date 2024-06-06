@@ -7,5 +7,3 @@ usize UART_BASES[UART_NR_DEVS] = {
 u32 UART_IRQS[UART_NR_DEVS] = {
     10,
 };
-
-i32 init_platform(void) { return 0; }

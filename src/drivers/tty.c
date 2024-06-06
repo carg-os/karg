@@ -24,7 +24,7 @@ static isize write(u32 num, const u8 *buf, usize size) {
         if (res < 0)
             return res;
     }
-    return 0;
+    return size;
 }
 
 driver_t tty_driver = {
