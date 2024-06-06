@@ -10,7 +10,7 @@ typedef struct {
     u32 nr_sinks;
 } ctrl_blk_t;
 
-static ctrl_blk_t ctrl_blks[TTY_DEV_CAPACITY];
+static ctrl_blk_t ctrl_blks[DRIVER_DEV_CAPACITY];
 
 static isize read(u32 num, u8 *buf, usize size) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
@@ -51,7 +51,7 @@ static void lazy_init_ctrl_blks(u32 num) {
 }
 
 i32 tty_register_src(u32 num, dev_t src) {
-    if (num >= TTY_DEV_CAPACITY)
+    if (num >= DRIVER_DEV_CAPACITY)
         return -EAGAIN;
     lazy_init_ctrl_blks(num);
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
@@ -60,7 +60,7 @@ i32 tty_register_src(u32 num, dev_t src) {
 }
 
 i32 tty_register_sink(u32 num, dev_t sink) {
-    if (num >= TTY_DEV_CAPACITY)
+    if (num >= DRIVER_DEV_CAPACITY)
         return -EAGAIN;
     lazy_init_ctrl_blks(num);
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];

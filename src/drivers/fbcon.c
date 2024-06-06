@@ -27,7 +27,7 @@ typedef struct {
     u32 fg, bg;
 } ctrl_blk_t;
 
-static ctrl_blk_t ctrl_blks[FB_DEV_CAPACITY];
+static ctrl_blk_t ctrl_blks[DRIVER_DEV_CAPACITY];
 
 static void write_char(u32 num, char c) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];

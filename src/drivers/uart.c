@@ -2,7 +2,9 @@
 
 #include <config.h>
 #include <dev.h>
+#include <dev_table.h>
 #include <drivers/tty.h>
+#include <errno.h>
 #include <init.h>
 #include <platform.h>
 #include <plic.h>
@@ -10,7 +12,7 @@
 #include <trap.h>
 
 #define REG(num, reg)                                                          \
-    *((volatile u8 *) (UART_BASES[num] + UART_REG_SIZE * (reg)))
+    *((volatile u8 *) (ctrl_blks[num].addr + ctrl_blks[num].reg_size * (reg)))
 #define THR 0
 #define RBR 0
 #define IER 1
@@ -23,13 +25,15 @@
 #define LSR_THRE 0x20
 
 typedef struct {
+    usize addr;
+    u8 reg_size;
     sem_t rx_sem;
     u8 rx_buf[UART_RX_BUF_SIZE];
     usize rx_head, rx_tail;
     u32 cursor_pos;
 } ctrl_blk_t;
 
-static ctrl_blk_t ctrl_blks[UART_NR_DEVS];
+static ctrl_blk_t ctrl_blks[DRIVER_DEV_CAPACITY];
 
 static void isr(u32 num) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
@@ -92,30 +96,33 @@ static isize write(u32 num, const u8 *buf, usize size) {
 }
 
 static driver_t driver = {
-    .nr_devs = UART_NR_DEVS,
+    .nr_devs = 0,
     .read = read,
     .write = write,
     .ioctl = nullptr,
 };
 
-static i32 init(void) {
-    for (u32 num = 0; num < UART_NR_DEVS; num++) {
-        sem_init(&ctrl_blks[num].rx_sem);
-        ctrl_blks[num].rx_head = 0;
-        ctrl_blks[num].rx_tail = 0;
-        ctrl_blks[num].cursor_pos = 0;
-        plic_enable_irq(UART_IRQS[num]);
-        REG(num, IER) = IER_ERBFI;
-        i32 res = trap_register_isr(UART_IRQS[num], isr, num);
-        if (res < 0)
-            return res;
-        dev_t dev = {.driver = &driver, .num = num};
-        tty_register_src(num, dev);
-        res = tty_register_sink(num, dev);
-        if (res < 0)
-            return res;
-    }
+static i32 init(const dev_node_t *node) {
+    if (driver.nr_devs == DRIVER_DEV_CAPACITY)
+        return -EAGAIN;
+    u32 num = driver.nr_devs++;
+    ctrl_blks[num].addr = node->addr;
+    ctrl_blks[num].reg_size = node->reg_size;
+    sem_init(&ctrl_blks[num].rx_sem);
+    ctrl_blks[num].rx_head = 0;
+    ctrl_blks[num].rx_tail = 0;
+    ctrl_blks[num].cursor_pos = 0;
+    plic_enable_irq(node->irq);
+    REG(num, IER) = IER_ERBFI;
+    i32 res = trap_register_isr(node->irq, isr, num);
+    if (res < 0)
+        return res;
+    dev_t dev = {.driver = &driver, .num = num};
+    tty_register_src(num, dev);
+    res = tty_register_sink(num, dev);
+    if (res < 0)
+        return res;
     return 0;
 }
 
-MODULE_POST_INIT(init);
+DEV_INIT("uart", init);

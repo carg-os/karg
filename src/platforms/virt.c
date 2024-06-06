@@ -1,9 +1,8 @@
-#include <platform.h>
+#include <dev.h>
 
-usize UART_BASES[UART_NR_DEVS] = {
-    0x10000000,
-};
+#include <dev_table.h>
 
-u32 UART_IRQS[UART_NR_DEVS] = {
-    10,
+dev_node_t dev_table[] = {
+    {.name = "uart", .addr = 0x10000000, .irq = 10, .reg_size = 1},
+    {},
 };

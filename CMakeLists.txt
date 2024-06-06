@@ -7,6 +7,7 @@ endif()
 
 add_executable(karg
     src/dev.c
+    src/dev_table.c
     src/drivers/fb.c
     src/drivers/fbcon.c
     src/drivers/font.c

@@ -18,6 +18,12 @@ SECTIONS {
     }
     PROVIDE(_init_end = .);
 
+    PROVIDE(_dev_init_start = .);
+    .init.dev : {
+        *(.init.dev)
+    }
+    PROVIDE(_dev_init_end = .);
+
     .text : {
         *(.text .text.*)
     }
