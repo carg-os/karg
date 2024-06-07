@@ -1,6 +1,7 @@
 #pragma once
 
 #define DRIVER_DEV_CAPACITY 8
+#define FB_DEV_HOOK_CAPACITY 8
 #define KHEAP_SIZE 0x400000
 #define PROC_FD_CAPACITY 64
 #define PROC_TABLE_SIZE 256

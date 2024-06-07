@@ -162,27 +162,33 @@ static isize write(u32 num, const u8 *buf, usize size) {
 }
 
 static driver_t driver = {
-    .nr_devs = 1,
+    .nr_devs = 0,
     .read = nullptr,
     .write = write,
     .ioctl = nullptr,
 };
 
+static void init_dev(u32 num, dev_t) {
+    if (num >= driver.nr_devs)
+        driver.nr_devs = num + 1;
+
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
+    ctrl_blk->state = STATE_NORMAL;
+    ctrl_blk->cursor.x = 0;
+    ctrl_blk->cursor.y = 0;
+    ctrl_blk->fg = DEFAULT_FG;
+    ctrl_blk->bg = DEFAULT_BG;
+
+    dev_t dev = {.driver = &driver, .num = num};
+    tty_register_sink(num, dev);
+}
+
 static i32 init(void) {
     for (u32 num = 0; num < fb_driver.nr_devs; num++) {
-        ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
-        ctrl_blk->state = STATE_NORMAL;
-        ctrl_blk->cursor.x = 0;
-        ctrl_blk->cursor.y = 0;
-        ctrl_blk->fg = DEFAULT_FG;
-        ctrl_blk->bg = DEFAULT_BG;
-
-        dev_t dev = {.driver = &driver, .num = num};
-        i32 res = tty_register_sink(num, dev);
-        if (res < 0)
-            return res;
+        init_dev(num, (dev_t){});
     }
+    fb_register_dev_hook(init_dev);
     return 0;
 }
 
-MODULE_LAYER_INIT(init);
+MODULE_POST_INIT(init);

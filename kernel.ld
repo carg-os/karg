@@ -14,7 +14,6 @@ SECTIONS {
         *(.init.pre_init)
         *(.init.init)
         *(.init.post_init)
-        *(.init.layer_init)
     }
     PROVIDE(_init_end = .);
 
