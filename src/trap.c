@@ -2,9 +2,9 @@
 
 #include <config.h>
 #include <csr.h>
+#include <drivers/plic.h>
 #include <errno.h>
 #include <init.h>
-#include <plic.h>
 #include <rv.h>
 #include <syscall.h>
 #include <timer.h>
@@ -42,7 +42,8 @@ void trap_handler(trapframe_t *frame) {
             timer_isr();
             break;
         case 9: {
-            u32 irq = plic_claim();
+            u32 irq;
+            plic_claim(&irq);
             for (u32 i = 0; i < nr_isr_entries; i++) {
                 if (isr_entries[i].irq != irq)
                     continue;

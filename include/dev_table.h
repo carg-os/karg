@@ -18,4 +18,4 @@ typedef struct {
 } dev_init_t;
 
 #define DEV_INIT(compat, init)                                                 \
-    __section(".init.dev") __used static dev_init_t _dev_init = {compat, init};
+    __section(".init.dev") __used static dev_init_t _dev_init = {compat, init}

@@ -3,11 +3,11 @@
 #include <config.h>
 #include <dev.h>
 #include <dev_table.h>
+#include <drivers/plic.h>
 #include <drivers/tty.h>
 #include <errno.h>
 #include <init.h>
 #include <platform.h>
-#include <plic.h>
 #include <sem.h>
 #include <trap.h>
 

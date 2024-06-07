@@ -11,6 +11,7 @@ add_executable(karg
     src/drivers/fb.c
     src/drivers/fbcon.c
     src/drivers/font.c
+    src/drivers/plic.c
     src/drivers/tty.c
     src/drivers/uart.c
     src/drivers/virtio-gpu.c
@@ -20,7 +21,6 @@ add_executable(karg
     src/kmain.c
     src/mm/kalloc.c
     src/mm/page_alloc.c
-    src/plic.c
     src/proc.c
     src/proc.S
     src/sbi.c
