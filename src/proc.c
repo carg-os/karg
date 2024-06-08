@@ -28,6 +28,16 @@ static pid_t new_pid(void) {
     return -EAGAIN;
 }
 
+static i32 new_fd(proc_t *proc) {
+    for (i32 fd = 0; fd < PROC_FD_CAPACITY; fd++) {
+        if (!(proc->fds[fd].flags & FD_FLAG_USED)) {
+            proc->fds[fd].flags = FD_FLAG_USED;
+            return fd;
+        }
+    }
+    return -EAGAIN;
+}
+
 i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
               char *argv[]) {
     proc->pid = new_pid();
@@ -42,28 +52,34 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     for (usize i = 0; i < PROC_FD_CAPACITY; i++) {
         proc->fds[i].flags = 0;
     }
-    proc->fds[0].flags = FD_FLAG_ALLOCATED | FD_FLAG_READABLE;
-    proc->fds[1].flags = FD_FLAG_ALLOCATED | FD_FLAG_WRITABLE;
-    proc->fds[2].flags = FD_FLAG_ALLOCATED | FD_FLAG_WRITABLE;
-    proc->fds[0].dev = (dev_t){.driver = &tty_driver, .num = 0};
-    proc->fds[1].dev = (dev_t){.driver = &tty_driver, .num = 0};
-    proc->fds[2].dev = (dev_t){.driver = &tty_driver, .num = 0};
+
+    i32 stdin_fd = new_fd(proc);
+    proc->fds[stdin_fd].dev = (dev_t){.driver = &tty_driver, .num = 0};
+    proc->fds[stdin_fd].flags |= FD_FLAG_READABLE;
+
+    i32 stdout_fd = new_fd(proc);
+    proc->fds[stdout_fd].dev = (dev_t){.driver = &tty_driver, .num = 0};
+    proc->fds[stdout_fd].flags |= FD_FLAG_WRITABLE;
+
+    i32 stderr_fd = new_fd(proc);
+    proc->fds[stderr_fd].dev = (dev_t){.driver = &tty_driver, .num = 0};
+    proc->fds[stderr_fd].flags |= FD_FLAG_WRITABLE;
 
     proc->state = PROC_STATE_INIT;
     timer_init(&proc->timer);
 
-    proc->kstack = (usize *) page_alloc();
-    proc->ustack = (usize *) page_alloc();
-    if (!proc->kstack || !proc->ustack)
+    proc->kern_stack = (usize *) page_alloc();
+    proc->user_stack = (usize *) page_alloc();
+    if (!proc->kern_stack || !proc->user_stack)
         return -ENOMEM;
 
-    usize *usp = (usize *) ((u8 *) proc->ustack + PAGE_SIZE);
+    usize *usp = (usize *) ((u8 *) proc->user_stack + PAGE_SIZE);
     *--usp = 0;
     for (i32 i = 0; i < argc; i++) {
         *--usp = (usize) argv[argc - 1 - i];
     }
 
-    proc->sp = (usize *) ((u8 *) proc->kstack + PAGE_SIZE);
+    proc->sp = (usize *) ((u8 *) proc->kern_stack + PAGE_SIZE);
     proc->sp -= 22;
     proc->sp[21] = (usize) proc;
     proc->sp[20] = (usize) entry;
@@ -81,14 +97,14 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
 void proc_deinit(proc_t *proc) {
     list_remove(&proc->tree_node);
     proc_table[proc->pid] = nullptr;
-    page_free(proc->ustack);
-    page_free(proc->kstack);
+    page_free(proc->user_stack);
+    page_free(proc->kern_stack);
     timer_deinit(&proc->timer);
 }
 
 void proc_setup(proc_t *proc) {
     csr_set_bits(sstatus, CSR_SSTATUS_SPIE);
-    if (proc->flags & PROC_FLAG_KERNEL) {
+    if (proc->flags & PROC_FLAG_KERN) {
         csr_set_bits(sstatus, CSR_SSTATUS_SPP);
     } else {
         csr_clear_bits(sstatus, CSR_SSTATUS_SPP);
@@ -110,4 +126,9 @@ void proc_adopt(proc_t *parent, proc_t *proc) {
     } else {
         list_push_back(&parent->zombie_children, &proc->tree_node);
     }
+}
+
+bool proc_is_bad_fd(const proc_t *proc, i32 fd) {
+    return fd < 0 || fd >= PROC_FD_CAPACITY ||
+           !(proc->fds[fd].flags & FD_FLAG_USED);
 }

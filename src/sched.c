@@ -17,7 +17,7 @@ void idle_task(void) {
 
 static i32 init(void) {
     i32 res =
-        proc_init(&idle_proc, idle_task, PROC_FLAG_KERNEL, nullptr, 0, nullptr);
+        proc_init(&idle_proc, idle_task, PROC_FLAG_KERN, nullptr, 0, nullptr);
     if (res < 0)
         return res;
     sched_update_state(&idle_proc, PROC_STATE_READY);

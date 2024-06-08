@@ -1,10 +1,8 @@
-#include <drivers/fbcon.h>
-
 #include <config.h>
 #include <dev.h>
 #include <drivers/fb.h>
+#include <drivers/font.h>
 #include <drivers/tty.h>
-#include <font.h>
 #include <init.h>
 
 #define DEFAULT_FG 0xFFF2EFDE

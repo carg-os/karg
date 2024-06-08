@@ -1,5 +1,3 @@
-#include <drivers/uart.h>
-
 #include <config.h>
 #include <dev.h>
 #include <dev_table.h>
@@ -102,7 +100,7 @@ static driver_t driver = {
     .ioctl = nullptr,
 };
 
-static i32 init(const dev_node_t *node) {
+static i32 init_dev(const dev_node_t *node) {
     if (driver.nr_devs == DRIVER_DEV_CAPACITY)
         return -EAGAIN;
     u32 num = driver.nr_devs++;
@@ -125,4 +123,4 @@ static i32 init(const dev_node_t *node) {
     return 0;
 }
 
-DEV_INIT("uart", init);
+DEV_INIT("uart", init_dev);

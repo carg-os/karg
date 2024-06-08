@@ -30,8 +30,8 @@ void sem_signal(sem_t *sem) {
     }
 }
 
-void sem_signaln(sem_t *sem, i32 n) {
-    for (i32 i = 0; i < n; i++) {
+void sem_signaln(sem_t *sem, u32 n) {
+    for (u32 i = 0; i < n; i++) {
         sem_signal(sem);
     }
 }

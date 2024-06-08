@@ -2,6 +2,6 @@
 
 #include <types.h>
 
-i32 plic_enable_irq(u32 irq);
-i32 plic_claim(u32 *irq);
-i32 plic_complete(u32 irq);
+void plic_enable_irq(u32 irq);
+void plic_claim(u32 *irq);
+void plic_complete(u32 irq);

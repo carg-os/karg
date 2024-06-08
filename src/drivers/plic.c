@@ -14,27 +14,14 @@ static usize base_addr = 0;
 #define INTR_CLAIM 0x80401
 #define INTR_COMPLETION 0x80401
 
-i32 plic_enable_irq(u32 irq) {
-    if (!base_addr)
-        return -ENXIO;
+void plic_enable_irq(u32 irq) {
     REG(INTR_ENABLE(irq)) |= 1 << irq % 32;
     REG(INTR_PRIO(irq)) = 1;
-    return 0;
 }
 
-i32 plic_claim(u32 *irq) {
-    if (!base_addr)
-        return -ENXIO;
-    *irq = REG(INTR_CLAIM);
-    return 0;
-}
+void plic_claim(u32 *irq) { *irq = REG(INTR_CLAIM); }
 
-i32 plic_complete(u32 irq) {
-    if (!base_addr)
-        return -ENXIO;
-    REG(INTR_COMPLETION) = irq;
-    return 0;
-}
+void plic_complete(u32 irq) { REG(INTR_COMPLETION) = irq; }
 
 static i32 init_dev(const dev_node_t *node) {
     base_addr = node->addr;

@@ -1,5 +1,3 @@
-#include <drivers/virtio-gpu.h>
-
 #include <dev.h>
 #include <drivers/fb.h>
 #include <init.h>

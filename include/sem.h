@@ -12,4 +12,4 @@ void sem_init(sem_t *sem);
 void sem_deinit(sem_t *sem);
 void sem_wait(sem_t *sem);
 void sem_signal(sem_t *sem);
-void sem_signaln(sem_t *sem, i32 n);
+void sem_signaln(sem_t *sem, u32 n);

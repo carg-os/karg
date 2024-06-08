@@ -8,7 +8,7 @@
 
 typedef i32 pid_t;
 
-#define PROC_FLAG_KERNEL 0x00000001
+#define PROC_FLAG_KERN 0x1
 
 typedef enum {
     PROC_STATE_INIT,
@@ -38,8 +38,8 @@ typedef struct proc {
     timer_t timer;
     struct proc *proc_waiting;
 
-    usize *kstack;
-    usize *ustack;
+    usize *kern_stack;
+    usize *user_stack;
     usize *sp;
 } proc_t;
 
@@ -50,3 +50,4 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, int argc,
 void proc_deinit(proc_t *proc);
 void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc);
 void proc_adopt(proc_t *parent, proc_t *proc);
+bool proc_is_bad_fd(const proc_t *proc, i32 fd);

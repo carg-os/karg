@@ -16,7 +16,6 @@ add_executable(karg
     src/drivers/uart.c
     src/drivers/virtio-gpu.c
     src/entry.S
-    src/fd.c
     src/init.c
     src/kmain.c
     src/mm/kalloc.c

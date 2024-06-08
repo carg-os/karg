@@ -7,6 +7,5 @@
 #define FB_WRITE_PIX 1
 #define FB_FLUSH 2
 
-i32 init_fb(void);
 i32 fb_register_dev(dev_t dev);
 i32 fb_register_dev_hook(void (*hook)(u32 num, dev_t dev));

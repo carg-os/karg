@@ -12,7 +12,6 @@ typedef struct {
     void *data;
 } timer_t;
 
-i32 init_timer(void);
 void timer_init(timer_t *timer);
 void timer_deinit(timer_t *timer);
 void timer_wait(timer_t *timer, time_t ns, void (*callback)(void *data),
