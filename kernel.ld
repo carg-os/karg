@@ -1,4 +1,4 @@
-#include <boot.h>
+#include <config.h>
 
 ENTRY(_start)
 SECTIONS {

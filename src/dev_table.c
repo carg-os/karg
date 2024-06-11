@@ -7,8 +7,8 @@ extern dev_init_t _dev_init_start;
 extern dev_init_t _dev_init_end;
 
 static i32 init(void) {
-    for (usize i = 0; dev_table[i].name; i++) {
-        dev_node_t *node = &dev_table[i];
+    for (usize i = 0; DEV_TABLE[i].name; i++) {
+        const dev_node_t *node = &DEV_TABLE[i];
         for (dev_init_t *init_ptr = &_dev_init_start; init_ptr < &_dev_init_end;
              init_ptr++) {
             if (strcmp(init_ptr->compat, node->name) == 0) {

@@ -5,7 +5,7 @@
 #include <drivers/tty.h>
 #include <errno.h>
 #include <init.h>
-#include <platform.h>
+#include <intr.h>
 #include <sem.h>
 #include <trap.h>
 
@@ -33,7 +33,8 @@ typedef struct {
 
 static ctrl_blk_t ctrl_blks[DRIVER_DEV_CAPACITY];
 
-static void isr(u32 num) {
+static void isr(void *data) {
+    u32 num = (usize) data;
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     dev_t tty_dev = {.driver = &tty_driver, .num = num};
     u8 byte = REG(num, RBR);
@@ -112,7 +113,7 @@ static i32 init_dev(const dev_node_t *node) {
     ctrl_blks[num].cursor_pos = 0;
     plic_enable_irq(node->irq);
     REG(num, IER) = IER_ERBFI;
-    i32 res = trap_register_isr(node->irq, isr, num);
+    i32 res = intr_register_isr(node->irq, isr, (void *) (usize) num);
     if (res < 0)
         return res;
     dev_t dev = {.driver = &driver, .num = num};

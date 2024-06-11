@@ -182,10 +182,7 @@ static void init_dev(u32 num, dev_t) {
 }
 
 static i32 init(void) {
-    for (u32 num = 0; num < fb_driver.nr_devs; num++) {
-        init_dev(num, (dev_t){});
-    }
-    fb_register_dev_hook(init_dev);
+    fb_register_dev_probe(init_dev);
     return 0;
 }
 

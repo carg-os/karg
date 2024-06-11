@@ -1,11 +1,11 @@
 #pragma once
 
-#include <csr.h>
 #include <types.h>
 
-#define NS_IN_SEC (1000000000U)
-#define TIME_MAX U64_MAX
+#define NS_IN_SEC 1000000000U
 
 typedef u64 time_t;
 
-static inline time_t time(void) { return csr_read(time); }
+#define TIME_MAX U64_MAX
+
+time_t time(void);

@@ -118,13 +118,13 @@ void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc) {
     ctx_sw(old_sp, new_sp);
 }
 
-void proc_adopt(proc_t *parent, proc_t *proc) {
+void proc_adopt(proc_t *new_parent, proc_t *proc) {
     list_remove(&proc->tree_node);
-    proc->parent = parent;
+    proc->parent = new_parent;
     if (proc->state != PROC_STATE_ZOMBIE) {
-        list_push_back(&parent->children, &proc->tree_node);
+        list_push_back(&new_parent->children, &proc->tree_node);
     } else {
-        list_push_back(&parent->zombie_children, &proc->tree_node);
+        list_push_back(&new_parent->zombie_children, &proc->tree_node);
     }
 }
 

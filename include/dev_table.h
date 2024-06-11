@@ -7,11 +7,11 @@
 typedef struct {
     const char *name;
     usize addr;
-    u32 irq;
+    irq_t irq;
     u8 reg_size;
 } dev_node_t;
 
-extern dev_node_t dev_table[];
+extern const dev_node_t DEV_TABLE[];
 
 typedef struct {
     const char *compat;

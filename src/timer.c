@@ -4,8 +4,9 @@
 #include <errno.h>
 #include <init.h>
 #include <kalloc.h>
-#include <platform.h>
 #include <sbi.h>
+
+extern const u32 TIMER_FREQ;
 
 static list_node_t wait_queue = LIST_HEAD_INIT(wait_queue);
 

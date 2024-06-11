@@ -1,4 +1,0 @@
-#pragma once
-
-#define BOOT_ENTRY_BASE 0x80200000
-#define BOOT_STACK_BASE 0x88000000

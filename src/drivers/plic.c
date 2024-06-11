@@ -3,7 +3,6 @@
 #include <csr.h>
 #include <dev_table.h>
 #include <errno.h>
-#include <platform.h>
 
 static usize base_addr = 0;
 
@@ -14,14 +13,14 @@ static usize base_addr = 0;
 #define INTR_CLAIM 0x80401
 #define INTR_COMPLETION 0x80401
 
-void plic_enable_irq(u32 irq) {
+void plic_enable_irq(irq_t irq) {
     REG(INTR_ENABLE(irq)) |= 1 << irq % 32;
     REG(INTR_PRIO(irq)) = 1;
 }
 
-void plic_claim(u32 *irq) { *irq = REG(INTR_CLAIM); }
+irq_t plic_claim() { return REG(INTR_CLAIM); }
 
-void plic_complete(u32 irq) { REG(INTR_COMPLETION) = irq; }
+void plic_complete(irq_t irq) { REG(INTR_COMPLETION) = irq; }
 
 static i32 init_dev(const dev_node_t *node) {
     base_addr = node->addr;
