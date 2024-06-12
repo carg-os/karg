@@ -21,4 +21,4 @@ static i32 init(void) {
     return 0;
 }
 
-MODULE_POST_INIT(init);
+module_post_init(init);

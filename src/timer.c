@@ -6,14 +6,14 @@
 
 extern const u32 TIMER_FREQ;
 
-static list_node_t wait_queue = LIST_HEAD_INIT(wait_queue);
+static list_node_t wait_queue = list_head_init(wait_queue);
 
 static i32 init(void) {
     csr_set_bits(sie, CSR_SIE_STIE);
     return sbi_set_timer(TIME_MAX);
 }
 
-MODULE_INIT(init);
+module_init(init);
 
 void timer_init(timer_t *timer) { list_init_head(&timer->node); }
 

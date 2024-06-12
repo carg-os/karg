@@ -7,7 +7,7 @@ typedef struct list_node {
     struct list_node *prev, *next;
 } list_node_t;
 
-#define LIST_HEAD_INIT(name)                                                   \
+#define list_head_init(name)                                                   \
     { &name, &name }
 
 static inline void list_init_head(list_node_t *head) {

@@ -27,7 +27,7 @@ static driver_t driver = {
 
 static i32 init(void) { return 0; }
 
-MODULE_INIT(init);
+module_init(init);
 
 i32 fb_register_dev(dev_t dev) {
     if (nr_devs == DRIVER_DEV_CAPACITY)
@@ -35,7 +35,7 @@ i32 fb_register_dev(dev_t dev) {
     u32 num = nr_devs++;
     ctrl_blks[num].dev = dev;
     for (u32 i = 0; i < nr_dev_probes; i++) {
-        probes[i](MAKE_DEV(driver, num));
+        probes[i](make_dev(driver, num));
     }
     return 0;
 }
@@ -45,7 +45,7 @@ i32 fb_register_dev_probe(void (*probe)(dev_t dev)) {
         return -EAGAIN;
     probes[nr_dev_probes++] = probe;
     for (u32 num = 0; num < nr_devs; num++) {
-        probe(MAKE_DEV(driver, num));
+        probe(make_dev(driver, num));
     }
     return 0;
 }

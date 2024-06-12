@@ -3,7 +3,7 @@
 #include <config.h>
 #include <init.h>
 
-static list_node_t ready_queue = LIST_HEAD_INIT(ready_queue);
+static list_node_t ready_queue = list_head_init(ready_queue);
 static proc_t idle_proc;
 static timer_t timer;
 
@@ -26,7 +26,7 @@ static i32 init(void) {
     return 0;
 }
 
-MODULE_POST_INIT(init);
+module_post_init(init);
 
 void sched_update_state(proc_t *proc, proc_state_t state) {
     if (proc->state == state)

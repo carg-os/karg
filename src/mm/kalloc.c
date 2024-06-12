@@ -11,7 +11,7 @@ typedef struct {
     usize size;
 } block_header_t;
 
-static list_node_t block_list = LIST_HEAD_INIT(block_list);
+static list_node_t block_list = list_head_init(block_list);
 
 void *kmalloc(usize size) {
     size += sizeof(block_header_t);

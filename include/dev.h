@@ -9,7 +9,7 @@ typedef struct {
     u32 num;
 } dev_t;
 
-#define MAKE_DEV(driver, num) ((dev_t){&(driver), num})
+#define make_dev(driver, num) ((dev_t){&(driver), num})
 
 isize dev_read(dev_t dev, u8 *buf, usize size);
 isize dev_write(dev_t dev, const u8 *buf, usize size);

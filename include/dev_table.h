@@ -18,5 +18,5 @@ typedef struct {
     i32 (*init)(const dev_node_t *node);
 } dev_init_t;
 
-#define DEV_INIT(compat, func)                                                 \
+#define dev_init(compat, func)                                                 \
     __section(.init.dev) __used static dev_init_t _dev_init = {compat, func}

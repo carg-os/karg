@@ -130,4 +130,4 @@ static i32 init_dev(const dev_node_t *node) {
     return 0;
 }
 
-DEV_INIT("uart", init_dev);
+dev_init("uart", init_dev);

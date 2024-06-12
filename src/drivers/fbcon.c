@@ -174,7 +174,7 @@ static void init_dev(dev_t dev) {
     ctrl_blk->fg = DEFAULT_FG;
     ctrl_blk->bg = DEFAULT_BG;
 
-    tty_register_sink(dev.num, MAKE_DEV(driver, dev.num));
+    tty_register_sink(dev.num, make_dev(driver, dev.num));
 }
 
 static i32 init(void) {
@@ -182,4 +182,4 @@ static i32 init(void) {
     return 0;
 }
 
-MODULE_POST_INIT(init);
+module_post_init(init);

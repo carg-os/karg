@@ -6,7 +6,7 @@
 
 extern u8 _heap_start[KHEAP_SIZE];
 
-static list_node_t free_list = LIST_HEAD_INIT(free_list);
+static list_node_t free_list = list_head_init(free_list);
 
 static i32 init(void) {
     list_node_t *node = (list_node_t *) _heap_start;
@@ -17,7 +17,7 @@ static i32 init(void) {
     return 0;
 }
 
-MODULE_PRE_INIT(init);
+module_pre_init(init);
 
 void *page_alloc(void) {
     if (list_empty(&free_list))

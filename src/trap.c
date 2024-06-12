@@ -14,7 +14,7 @@ static i32 init(void) {
     return 0;
 }
 
-MODULE_PRE_INIT(init);
+module_pre_init(init);
 
 void trap_handler(trapframe_t *frame) {
     if (frame->scause & CSR_SCAUSE_INTR) {
