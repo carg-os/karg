@@ -23,6 +23,7 @@ static i32 init(void) {
     sched_update_state(&idle_proc, PROC_STATE_READY);
 
     timer_init(&timer);
+
     return 0;
 }
 

@@ -16,6 +16,7 @@ typedef enum {
 
 isize sys_reboot(const trapframe_t *frame) {
     reboot_type_t type = frame->a0;
+
     switch (type) {
     case REBOOT_TYPE_REBOOT:
         return sbi_reboot(SBI_REBOOT_TYPE_REBOOT, SBI_REBOOT_REASON_NONE);

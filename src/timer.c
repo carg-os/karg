@@ -17,8 +17,6 @@ module_init(init);
 
 void timer_init(timer_t *timer) { list_init_head(&timer->node); }
 
-void timer_deinit(timer_t *timer) { timer_cancel(timer); }
-
 void timer_wait(timer_t *timer, time_t ns, void (*callback)(void *data),
                 void *data) {
     timer->time = time() + ns / (NS_IN_SEC / TIMER_FREQ);

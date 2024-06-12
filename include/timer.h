@@ -13,7 +13,6 @@ typedef struct {
 } timer_t;
 
 void timer_init(timer_t *timer);
-void timer_deinit(timer_t *timer);
 void timer_wait(timer_t *timer, time_t ns, void (*callback)(void *data),
                 void *data);
 void timer_cancel(timer_t *timer);

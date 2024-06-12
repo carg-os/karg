@@ -54,15 +54,21 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     }
 
     i32 stdin_fd = new_fd(proc);
-    proc->fds[stdin_fd].dev = (dev_t){.driver = &tty_driver, .num = 0};
+    if (stdin_fd < 0)
+        return stdin_fd;
+    proc->fds[stdin_fd].dev = make_dev(tty_driver, 0);
     proc->fds[stdin_fd].flags |= FD_FLAG_READABLE;
 
     i32 stdout_fd = new_fd(proc);
-    proc->fds[stdout_fd].dev = (dev_t){.driver = &tty_driver, .num = 0};
+    if (stdin_fd < 0)
+        return stdin_fd;
+    proc->fds[stdout_fd].dev = make_dev(tty_driver, 0);
     proc->fds[stdout_fd].flags |= FD_FLAG_WRITABLE;
 
     i32 stderr_fd = new_fd(proc);
-    proc->fds[stderr_fd].dev = (dev_t){.driver = &tty_driver, .num = 0};
+    if (stdin_fd < 0)
+        return stdin_fd;
+    proc->fds[stderr_fd].dev = make_dev(tty_driver, 0);
     proc->fds[stderr_fd].flags |= FD_FLAG_WRITABLE;
 
     proc->state = PROC_STATE_INIT;
@@ -73,13 +79,13 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     if (!proc->kern_stack || !proc->user_stack)
         return -ENOMEM;
 
-    usize *usp = (usize *) ((u8 *) proc->user_stack + PAGE_SIZE);
+    usize *usp = (usize *) ((usize) proc->user_stack + PAGE_SIZE);
     *--usp = 0;
     for (i32 i = 0; i < argc; i++) {
         *--usp = (usize) argv[argc - 1 - i];
     }
 
-    proc->sp = (usize *) ((u8 *) proc->kern_stack + PAGE_SIZE);
+    proc->sp = (usize *) ((usize) proc->kern_stack + PAGE_SIZE);
     proc->sp -= 22;
     proc->sp[21] = (usize) proc;
     proc->sp[20] = (usize) entry;
@@ -97,9 +103,9 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
 void proc_deinit(proc_t *proc) {
     list_remove(&proc->tree_node);
     proc_table[proc->pid] = nullptr;
+
     page_free(proc->user_stack);
     page_free(proc->kern_stack);
-    timer_deinit(&proc->timer);
 }
 
 void proc_setup(proc_t *proc) {
