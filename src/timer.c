@@ -1,9 +1,7 @@
 #include <timer.h>
 
 #include <csr.h>
-#include <errno.h>
 #include <init.h>
-#include <kalloc.h>
 #include <sbi.h>
 
 extern const u32 TIMER_FREQ;

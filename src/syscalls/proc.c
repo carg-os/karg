@@ -9,9 +9,11 @@ isize sys_proc(const trapframe_t *frame) {
     char **argv = (char **) frame->a1;
     if (!entry || !argv)
         return -EFAULT;
-    usize argc;
-    for (argc = 0; argv[argc]; argc++)
-        ;
+
+    usize argc = 0;
+    while (argv[argc]) {
+        argc++;
+    }
 
     proc_t *proc = (proc_t *) kmalloc(sizeof(proc_t));
     if (!proc)

@@ -1,8 +1,5 @@
 #include <dev.h>
 
-#include <driver.h>
-#include <errno.h>
-
 isize dev_read(dev_t dev, u8 *buf, usize size) {
     return dev.driver->read(dev.num, buf, size);
 }

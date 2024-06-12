@@ -3,8 +3,7 @@
 #include <init.h>
 #include <string.h>
 
-extern dev_init_t _dev_init_start;
-extern dev_init_t _dev_init_end;
+extern dev_init_t _dev_init_start, _dev_init_end;
 
 static i32 init(void) {
     for (usize i = 0; DEV_TABLE[i].name; i++) {

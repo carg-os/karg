@@ -11,19 +11,16 @@ isize sys_wait(const trapframe_t *frame) {
         list_empty(&curr_proc->zombie_children))
         return -ECHILD;
 
+    proc_t *proc;
     if (!list_empty(&curr_proc->zombie_children)) {
-        proc_t *proc =
-            list_first_entry(&curr_proc->zombie_children, proc_t, tree_node);
-        if (status)
-            *status = proc->exit_status & 0xFF;
-        proc_deinit(proc);
-        kfree(proc);
-        return proc->pid;
+        proc = list_first_entry(&curr_proc->zombie_children, proc_t, tree_node);
+        goto quit;
     }
 
     sched_update_state(curr_proc, PROC_STATE_WAIT_CHILD);
+    proc = curr_proc->proc_waiting;
 
-    proc_t *proc = curr_proc->proc_waiting;
+quit:
     if (status)
         *status = proc->exit_status & 0xFF;
     proc_deinit(proc);

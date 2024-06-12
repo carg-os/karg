@@ -11,7 +11,6 @@ void init(void);
     proc_init(init_proc, init, 0, nullptr, 0, nullptr);
 
     sched_update_state(init_proc, PROC_STATE_READY);
-
     sched_start();
 
     unreachable();

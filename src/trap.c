@@ -1,6 +1,5 @@
 #include <trap.h>
 
-#include <config.h>
 #include <csr.h>
 #include <errno.h>
 #include <init.h>
@@ -23,10 +22,9 @@ void trap_handler(trapframe_t *frame) {
         case CSR_SCAUSE_TIMER_INTR:
             timer_isr();
             break;
-        case CSR_SCAUSE_EXT_INTR: {
+        case CSR_SCAUSE_EXT_INTR:
             intr_isr();
             break;
-        }
         }
     } else {
         switch (frame->scause) {
