@@ -11,6 +11,7 @@ typedef struct {
 } ctrl_blk_t;
 
 static ctrl_blk_t ctrl_blks[DRIVER_DEV_CAPACITY];
+static u32 nr_devs = 0;
 
 static isize read(u32 num, u8 *buf, usize size) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
@@ -28,7 +29,6 @@ static isize write(u32 num, const u8 *buf, usize size) {
 }
 
 driver_t tty_driver = {
-    .nr_devs = 0,
     .read = read,
     .write = write,
     .ioctl = nullptr,
@@ -39,15 +39,15 @@ static i32 init(void) { return 0; }
 MODULE_INIT(init);
 
 static void lazy_init_ctrl_blks(u32 num) {
-    if (num < tty_driver.nr_devs)
+    if (num < nr_devs)
         return;
 
-    for (u32 i = tty_driver.nr_devs; i <= num; i++) {
+    for (u32 i = nr_devs; i <= num; i++) {
         ctrl_blk_t *ctrl_blk = &ctrl_blks[i];
         ctrl_blk->src.driver = nullptr;
         ctrl_blk->nr_sinks = 0;
     }
-    tty_driver.nr_devs = num + 1;
+    nr_devs = num + 1;
 }
 
 i32 tty_register_src(u32 num, dev_t src) {

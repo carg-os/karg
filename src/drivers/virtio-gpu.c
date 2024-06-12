@@ -239,7 +239,6 @@ static i32 ioctl(u32 num, u32 req, va_list args) {
 }
 
 static driver_t driver = {
-    .nr_devs = 1,
     .read = nullptr,
     .write = nullptr,
     .ioctl = ioctl,

@@ -32,6 +32,7 @@ typedef struct {
 } ctrl_blk_t;
 
 static ctrl_blk_t ctrl_blks[DRIVER_DEV_CAPACITY];
+static u32 nr_devs = 0;
 
 static void isr(void *data) {
     u32 num = (usize) data;
@@ -67,6 +68,9 @@ static void isr(void *data) {
 }
 
 static isize read(u32 num, u8 *buf, usize size) {
+    if (num >= nr_devs)
+        return -ENXIO;
+
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (usize i = 0; i < size; i++) {
         sem_wait(&ctrl_blk->rx_sem);
@@ -85,6 +89,9 @@ static void put_byte(u32 num, u8 byte) {
 }
 
 static isize write(u32 num, const u8 *buf, usize size) {
+    if (num >= nr_devs)
+        return -ENXIO;
+
     for (usize i = 0; i < size; i++) {
         u8 byte = buf[i];
         if (byte == '\n')
@@ -95,16 +102,15 @@ static isize write(u32 num, const u8 *buf, usize size) {
 }
 
 static driver_t driver = {
-    .nr_devs = 0,
     .read = read,
     .write = write,
     .ioctl = nullptr,
 };
 
 static i32 init_dev(const dev_node_t *node) {
-    if (driver.nr_devs == DRIVER_DEV_CAPACITY)
+    if (nr_devs == DRIVER_DEV_CAPACITY)
         return -EAGAIN;
-    u32 num = driver.nr_devs++;
+    u32 num = nr_devs++;
     ctrl_blks[num].addr = node->addr;
     ctrl_blks[num].reg_size = node->reg_size;
     sem_init(&ctrl_blks[num].rx_sem);

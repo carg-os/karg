@@ -3,6 +3,7 @@
 #include <drivers/fb.h>
 #include <drivers/font.h>
 #include <drivers/tty.h>
+#include <errno.h>
 #include <init.h>
 
 #define DEFAULT_FG 0xFFF2EFDE
@@ -19,6 +20,7 @@ typedef struct {
 } cursor_t;
 
 typedef struct {
+    dev_t fb_dev;
     state_t state;
     u8 num;
     cursor_t cursor;
@@ -26,18 +28,20 @@ typedef struct {
 } ctrl_blk_t;
 
 static ctrl_blk_t ctrl_blks[DRIVER_DEV_CAPACITY];
+static u32 nr_devs = 0;
 
 static void write_char(u32 num, char c) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (i32 y = 0; y < FONT_HEIGHT; y++) {
         for (i32 x = 0; x < FONT_WIDTH; x++) {
-            dev_t fb_dev = {.driver = &fb_driver, .num = num};
             if (font[(u8) c][y] & 1 << (FONT_WIDTH - 1 - x)) {
-                dev_ioctl(fb_dev, FB_WRITE_PIX, ctrl_blk->cursor.x + x,
-                          ctrl_blk->cursor.y + y, ctrl_blk->fg);
+                dev_ioctl(ctrl_blk->fb_dev, FB_WRITE_PIX,
+                          ctrl_blk->cursor.x + x, ctrl_blk->cursor.y + y,
+                          ctrl_blk->fg);
             } else {
-                dev_ioctl(fb_dev, FB_WRITE_PIX, ctrl_blk->cursor.x + x,
-                          ctrl_blk->cursor.y + y, ctrl_blk->bg);
+                dev_ioctl(ctrl_blk->fb_dev, FB_WRITE_PIX,
+                          ctrl_blk->cursor.x + x, ctrl_blk->cursor.y + y,
+                          ctrl_blk->bg);
             }
         }
     }
@@ -59,11 +63,7 @@ static void handle_char(u32 num, char c) {
         break;
     default: {
         write_char(num, c);
-        dev_t fb_dev = {
-            .driver = &fb_driver,
-            .num = num,
-        };
-        dev_ioctl(fb_dev, FB_FLUSH, ctrl_blk->cursor.y, FONT_HEIGHT);
+        dev_ioctl(ctrl_blk->fb_dev, FB_FLUSH, ctrl_blk->cursor.y, FONT_HEIGHT);
         ctrl_blk->cursor.x += FONT_WIDTH;
         break;
     }
@@ -74,8 +74,7 @@ static void fill_fb(u32 num, u32 width, u32 height, u32 color) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (u32 y = ctrl_blk->cursor.y; y < ctrl_blk->cursor.y + height; y++) {
         for (u32 x = ctrl_blk->cursor.x; x < ctrl_blk->cursor.x + width; x++) {
-            dev_t fb_dev = {.driver = &fb_driver, .num = num};
-            dev_ioctl(fb_dev, FB_WRITE_PIX, x, y, color);
+            dev_ioctl(ctrl_blk->fb_dev, FB_WRITE_PIX, x, y, color);
         }
     }
 }
@@ -110,14 +109,10 @@ static bool handle_escape_code(u32 num, char c) {
         break;
     case 'J': {
         ctrl_blk->cursor.y = 0;
-        dev_t fb_dev = {
-            .driver = &fb_driver,
-            .num = num,
-        };
         u32 width, height;
-        dev_ioctl(fb_dev, FB_GET_SCREEN_INFO, &width, &height);
+        dev_ioctl(ctrl_blk->fb_dev, FB_GET_SCREEN_INFO, &width, &height);
         fill_fb(num, width, height, DEFAULT_BG);
-        dev_ioctl(fb_dev, FB_FLUSH, 0, height);
+        dev_ioctl(ctrl_blk->fb_dev, FB_FLUSH, 0, height);
         break;
     }
     case ';':
@@ -153,6 +148,8 @@ static void putc(u32 num, char c) {
 }
 
 static isize write(u32 num, const u8 *buf, usize size) {
+    if (num >= nr_devs)
+        return -ENXIO;
     for (usize i = 0; i < size; i++) {
         putc(num, buf[i]);
     }
@@ -160,25 +157,24 @@ static isize write(u32 num, const u8 *buf, usize size) {
 }
 
 static driver_t driver = {
-    .nr_devs = 0,
     .read = nullptr,
     .write = write,
     .ioctl = nullptr,
 };
 
-static void init_dev(u32 num, dev_t) {
-    if (num >= driver.nr_devs)
-        driver.nr_devs = num + 1;
+static void init_dev(dev_t dev) {
+    if (dev.num >= nr_devs)
+        nr_devs = dev.num + 1;
 
-    ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
+    ctrl_blk_t *ctrl_blk = &ctrl_blks[dev.num];
+    ctrl_blk->fb_dev = dev;
     ctrl_blk->state = STATE_NORMAL;
     ctrl_blk->cursor.x = 0;
     ctrl_blk->cursor.y = 0;
     ctrl_blk->fg = DEFAULT_FG;
     ctrl_blk->bg = DEFAULT_BG;
 
-    dev_t dev = {.driver = &driver, .num = num};
-    tty_register_sink(num, dev);
+    tty_register_sink(dev.num, MAKE_DEV(driver, dev.num));
 }
 
 static i32 init(void) {

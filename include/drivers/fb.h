@@ -8,4 +8,4 @@
 #define FB_FLUSH 2
 
 i32 fb_register_dev(dev_t dev);
-i32 fb_register_dev_probe(void (*probe)(u32 num, dev_t dev));
+i32 fb_register_dev_probe(void (*probe)(dev_t dev));
