@@ -9,13 +9,23 @@ SECTIONS {
     }
 
     . = ALIGN(4K);
+    PROVIDE(_pre_init_start = .);
+    .init.pre_init : {
+        *(.init.pre_init)
+    }
+    PROVIDE(_pre_init_end = .);
+
     PROVIDE(_init_start = .);
     .init.init : {
-        *(.init.pre_init)
         *(.init.init)
-        *(.init.post_init)
     }
     PROVIDE(_init_end = .);
+
+    PROVIDE(_post_init_start = .);
+    .init.post_init : {
+        *(.init.post_init)
+    }
+    PROVIDE(_post_init_end = .);
 
     PROVIDE(_dev_init_start = .);
     .init.dev : {

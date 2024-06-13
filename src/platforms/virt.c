@@ -1,8 +1,8 @@
-#include <dev_table.h>
+#include <dev.h>
 
 const dev_node_t DEV_TABLE[] = {
     {.name = "plic", .addr = 0x0C000000},
-    {.name = "uart", .addr = 0x10000000, .irq = 10, .reg_size = 1},
+    {.name = "uart8250", .addr = 0x10000000, .irq = 10, .reg_size = 1},
     {},
 };
 

@@ -7,3 +7,12 @@ static inline i32 strcmp(const char *lhs, const char *rhs) {
     }
     return *lhs - *rhs;
 }
+
+static inline usize strlen(const char *str) {
+    usize len = 0;
+    while (*str) {
+        str++;
+        len++;
+    }
+    return len;
+}

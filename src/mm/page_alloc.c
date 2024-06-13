@@ -3,8 +3,11 @@
 #include <config.h>
 #include <init.h>
 #include <list.h>
+#include <module.h>
 
 extern u8 _heap_start[KHEAP_SIZE];
+
+MODULE_NAME("page_alloc");
 
 static list_node_t free_list = list_head_init(free_list);
 

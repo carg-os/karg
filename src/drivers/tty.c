@@ -34,10 +34,6 @@ driver_t tty_driver = {
     .ioctl = nullptr,
 };
 
-static i32 init(void) { return 0; }
-
-module_init(init);
-
 static void lazy_init_ctrl_blks(u32 num) {
     if (num < nr_devs)
         return;

@@ -1,7 +1,10 @@
 #include <dev.h>
 #include <drivers/fb.h>
 #include <init.h>
+#include <module.h>
 #include <types.h>
+
+MODULE_NAME("virtio_gpu");
 
 enum virtio_gpu_ctrl_type {
     /* 2d commands */
@@ -383,4 +386,4 @@ static i32 init(void) {
     return 0;
 }
 
-module_post_init(init);
+module_init(init);

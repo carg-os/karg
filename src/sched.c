@@ -2,6 +2,9 @@
 
 #include <config.h>
 #include <init.h>
+#include <module.h>
+
+MODULE_NAME("sched");
 
 static list_node_t ready_queue = list_head_init(ready_queue);
 static proc_t idle_proc;

@@ -1,8 +1,11 @@
 #include <drivers/plic.h>
 
 #include <csr.h>
-#include <dev_table.h>
+#include <dev.h>
 #include <errno.h>
+#include <module.h>
+
+MODULE_NAME("plic");
 
 static usize base_addr = 0;
 

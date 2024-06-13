@@ -1,13 +1,15 @@
 #include <config.h>
 #include <dev.h>
-#include <dev_table.h>
 #include <drivers/plic.h>
 #include <drivers/tty.h>
 #include <errno.h>
 #include <init.h>
 #include <intr.h>
+#include <module.h>
 #include <sem.h>
 #include <trap.h>
+
+MODULE_NAME("uart");
 
 #define REG(num, reg)                                                          \
     *((volatile u8 *) (ctrl_blks[num].addr + ctrl_blks[num].reg_size * (reg)))
@@ -130,4 +132,4 @@ static i32 init_dev(const dev_node_t *node) {
     return 0;
 }
 
-dev_init("uart", init_dev);
+dev_init("uart8250", init_dev);

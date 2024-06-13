@@ -2,9 +2,12 @@
 
 #include <csr.h>
 #include <init.h>
+#include <module.h>
 #include <sbi.h>
 
 extern const u32 TIMER_FREQ;
+
+MODULE_NAME("timer");
 
 static list_node_t wait_queue = list_head_init(wait_queue);
 
@@ -13,7 +16,7 @@ static i32 init(void) {
     return sbi_set_timer(TIME_MAX);
 }
 
-module_init(init);
+module_pre_init(init);
 
 void timer_init(timer_t *timer) { list_init_head(&timer->node); }
 

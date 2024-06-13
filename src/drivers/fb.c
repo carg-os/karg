@@ -25,10 +25,6 @@ static driver_t driver = {
     .ioctl = ioctl,
 };
 
-static i32 init(void) { return 0; }
-
-module_init(init);
-
 i32 fb_register_dev(dev_t dev) {
     if (nr_devs == DRIVER_DEV_CAPACITY)
         return -EAGAIN;

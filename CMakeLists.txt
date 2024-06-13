@@ -7,7 +7,6 @@ endif()
 
 add_executable(karg
     src/dev.c
-    src/dev_table.c
     src/drivers/fb.c
     src/drivers/fbcon.c
     src/drivers/font.c
@@ -19,6 +18,7 @@ add_executable(karg
     src/init.c
     src/intr.c
     src/kmain.c
+    src/log.c
     src/mm/kalloc.c
     src/mm/page_alloc.c
     src/proc.c

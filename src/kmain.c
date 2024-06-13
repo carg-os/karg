@@ -1,10 +1,14 @@
 #include <init.h>
 #include <kalloc.h>
+#include <log.h>
+#include <module.h>
 #include <sched.h>
 
 void init(void);
 
 static proc_t init_proc;
+
+MODULE_NAME("main");
 
 [[noreturn]] void kmain(void) {
     init_modules();

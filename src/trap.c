@@ -4,9 +4,12 @@
 #include <errno.h>
 #include <init.h>
 #include <intr.h>
+#include <module.h>
 #include <rv.h>
 #include <syscall.h>
 #include <timer.h>
+
+MODULE_NAME("trap");
 
 static i32 init(void) {
     void trap_entry(void);

@@ -5,6 +5,9 @@
 #include <drivers/tty.h>
 #include <errno.h>
 #include <init.h>
+#include <module.h>
+
+MODULE_NAME("fbcon");
 
 #define DEFAULT_FG 0xFFF2EFDE
 #define DEFAULT_BG 0xFF202020
@@ -21,6 +24,7 @@ typedef struct {
 
 typedef struct {
     dev_t fb_dev;
+    u32 width, height;
     state_t state;
     u8 num;
     cursor_t cursor;
@@ -70,10 +74,12 @@ static void handle_char(u32 num, char c) {
     }
 }
 
-static void fill_fb(u32 num, u32 width, u32 height, u32 color) {
+static void fill_fb(u32 num, u32 color) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
-    for (u32 y = ctrl_blk->cursor.y; y < ctrl_blk->cursor.y + height; y++) {
-        for (u32 x = ctrl_blk->cursor.x; x < ctrl_blk->cursor.x + width; x++) {
+    for (u32 y = ctrl_blk->cursor.y; y < ctrl_blk->cursor.y + ctrl_blk->height;
+         y++) {
+        for (u32 x = ctrl_blk->cursor.x;
+             x < ctrl_blk->cursor.x + ctrl_blk->width; x++) {
             dev_ioctl(ctrl_blk->fb_dev, FB_WRITE_PIX, x, y, color);
         }
     }
@@ -98,6 +104,9 @@ void set_color(u32 num) {
     case 90:
         ctrl_blk->fg = 0xFF808080;
         break;
+    case 92:
+        ctrl_blk->fg = 0xFF85FF85;
+        break;
     }
 }
 
@@ -109,10 +118,8 @@ static bool handle_escape_code(u32 num, char c) {
         break;
     case 'J': {
         ctrl_blk->cursor.y = 0;
-        u32 width, height;
-        dev_ioctl(ctrl_blk->fb_dev, FB_GET_SCREEN_INFO, &width, &height);
-        fill_fb(num, width, height, DEFAULT_BG);
-        dev_ioctl(ctrl_blk->fb_dev, FB_FLUSH, 0, height);
+        fill_fb(num, DEFAULT_BG);
+        dev_ioctl(ctrl_blk->fb_dev, FB_FLUSH, 0, ctrl_blk->height);
         break;
     }
     case ';':
@@ -166,13 +173,21 @@ static void init_dev(dev_t dev) {
     if (dev.num >= nr_devs)
         nr_devs = dev.num + 1;
 
+    u32 width, height;
+    dev_ioctl(dev, FB_GET_SCREEN_INFO, &width, &height);
+
     ctrl_blk_t *ctrl_blk = &ctrl_blks[dev.num];
     ctrl_blk->fb_dev = dev;
+    ctrl_blk->width = width;
+    ctrl_blk->height = height;
     ctrl_blk->state = STATE_NORMAL;
     ctrl_blk->cursor.x = 0;
     ctrl_blk->cursor.y = 0;
     ctrl_blk->fg = DEFAULT_FG;
     ctrl_blk->bg = DEFAULT_BG;
+
+    fill_fb(dev.num, DEFAULT_BG);
+    dev_ioctl(dev, FB_FLUSH, 0, height);
 
     tty_register_sink(dev.num, make_dev(driver, dev.num));
 }
@@ -182,4 +197,4 @@ static i32 init(void) {
     return 0;
 }
 
-module_post_init(init);
+module_init(init);
