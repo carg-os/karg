@@ -13,6 +13,7 @@ add_executable(karg
     src/drivers/plic.c
     src/drivers/tty.c
     src/drivers/uart.c
+    src/drivers/virtio.c
     src/drivers/virtio-gpu.c
     src/entry.S
     src/init.c

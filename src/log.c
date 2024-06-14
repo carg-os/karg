@@ -34,6 +34,15 @@ static void kvprintf(const char *fmt, va_list args) {
                 write(str, strlen(str));
                 break;
             }
+            case 'p': {
+                usize ptr = va_arg(args, usize);
+                char buf[sizeof(usize) * 2];
+                for (isize i = sizeof(buf) - 1; i >= 0; i--) {
+                    buf[i] = ((usize) ptr & 0xF) + '0';
+                    ptr >>= 4;
+                }
+                write(buf, sizeof(buf));
+            }
             }
             break;
         default:

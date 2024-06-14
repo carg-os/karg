@@ -36,8 +36,8 @@ static i32 init(void) {
              init_ptr++) {
             if (strcmp(init_ptr->compat, node->name) == 0) {
                 i32 res = init_ptr->init(node);
-                log_info("loaded driver \"%s\" for device \"%s\"",
-                         init_ptr->name, init_ptr->compat);
+                log_info("loaded driver %s for device %s", init_ptr->name,
+                         init_ptr->compat);
                 if (res < 0)
                     return res;
                 break;
