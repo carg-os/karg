@@ -1,9 +1,7 @@
 #include <proc.h>
 
-#include <config.h>
 #include <csr.h>
 #include <errno.h>
-#include <kalloc.h>
 #include <page_alloc.h>
 
 void ctx_sw(usize **old_sp, usize **new_sp);

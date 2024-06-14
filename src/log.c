@@ -37,8 +37,8 @@ static void kvprintf(const char *fmt, va_list args) {
             case 'p': {
                 usize ptr = va_arg(args, usize);
                 char buf[sizeof(usize) * 2];
-                for (isize i = sizeof(buf) - 1; i >= 0; i--) {
-                    buf[i] = ((usize) ptr & 0xF) + '0';
+                for (usize i = sizeof(buf); i > 0; i--) {
+                    buf[i - 1] = ((usize) ptr & 0xF) + '0';
                     ptr >>= 4;
                 }
                 write(buf, sizeof(buf));
@@ -64,22 +64,22 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
     va_start(args);
     switch (severity) {
     case LOG_SEVERITY_DEBUG:
-        kprintf("[\e[36mdebug\e[0m] ");
+        kprintf("[\x1B[36mdebug\x1B[0m] ");
         break;
     case LOG_SEVERITY_INFO:
-        kprintf("[\e[32minfo\e[0m] ");
+        kprintf("[\x1B[32minfo\x1B[0m] ");
         break;
     case LOG_SEVERITY_WARNING:
-        kprintf("[\e[33mwarning\e[0m] ");
+        kprintf("[\x1B[33mwarning\x1B[0m] ");
         break;
     case LOG_SEVERITY_ERROR:
-        kprintf("[\e[31merror\e[0m] ");
+        kprintf("[\x1B[31merror\x1B[0m] ");
         break;
     case LOG_SEVERITY_CRITICAL:
-        kprintf("[\e[37;43mcritical\e[0m] ");
+        kprintf("[\x1B[43mcritical\x1B[0m] ");
         break;
     case LOG_SEVERITY_PANIC:
-        kprintf("[\e[37;41mpanic\e[0m] ");
+        kprintf("[\x1B[41mpanic\x1B[0m] ");
         break;
     }
     kvprintf(fmt, args);

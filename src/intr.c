@@ -13,7 +13,7 @@ static isr_t isrs[INTR_ISR_CAPACITY];
 static u32 nr_isrs = 0;
 
 i32 intr_register_isr(irq_t irq, void (*isr)(void *data), void *data) {
-    if (nr_isrs == INTR_ISR_CAPACITY)
+    if (nr_isrs >= INTR_ISR_CAPACITY)
         return -EAGAIN;
     u32 idx = nr_isrs++;
     isrs[idx].irq = irq;

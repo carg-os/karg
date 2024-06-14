@@ -2,19 +2,18 @@
 
 #include <csr.h>
 #include <dev.h>
-#include <errno.h>
 #include <module.h>
 
 MODULE_NAME("plic");
 
 static usize base_addr = 0;
 
-#define REG(reg) *((volatile u32 *) base_addr + (reg))
-#define INTR_PRIO(irq) irq
-#define INTR_ENABLE(irq) 0x820 + irq / 32
-#define PRIO_THRESHOLD 0x80400
-#define INTR_CLAIM 0x80401
-#define INTR_COMPLETION 0x80401
+#define REG(reg) *((volatile u32 *) (base_addr + reg))
+#define INTR_PRIO(irq) (irq * 4)
+#define INTR_ENABLE(irq) (0x2080 + irq / 32 * 4)
+#define PRIO_THRESHOLD 0x201000
+#define INTR_CLAIM 0x201004
+#define INTR_COMPLETION 0x201004
 
 void plic_enable_irq(irq_t irq) {
     REG(INTR_ENABLE(irq)) |= 1 << irq % 32;

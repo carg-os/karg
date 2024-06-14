@@ -32,12 +32,12 @@ i32 dev_vioctl(dev_t dev, u32 req, va_list args) {
 static i32 init(void) {
     for (usize i = 0; DEV_TABLE[i].name; i++) {
         const dev_node_t *node = &DEV_TABLE[i];
-        for (dev_init_t *init_ptr = &_dev_init_start; init_ptr < &_dev_init_end;
-             init_ptr++) {
-            if (strcmp(init_ptr->compat, node->name) == 0) {
-                i32 res = init_ptr->init(node);
-                log_info("loaded driver %s for device %s", init_ptr->name,
-                         init_ptr->compat);
+        for (dev_init_t *dev_init = &_dev_init_start; dev_init < &_dev_init_end;
+             dev_init++) {
+            if (strcmp(dev_init->compat, node->name) == 0) {
+                i32 res = dev_init->init(node);
+                log_info("loaded driver %s for device %s", dev_init->name,
+                         dev_init->compat);
                 if (res < 0)
                     return res;
                 break;

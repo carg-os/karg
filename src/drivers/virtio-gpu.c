@@ -1,12 +1,7 @@
 #include <drivers/virtio.h>
 
-#include <config.h>
-#include <dev.h>
 #include <drivers/fb.h>
 #include <errno.h>
-#include <init.h>
-#include <module.h>
-#include <types.h>
 
 enum virtio_gpu_ctrl_type {
     /* 2d commands */

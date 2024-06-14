@@ -1,8 +1,8 @@
 #include <sched.h>
 
-#include <config.h>
 #include <init.h>
 #include <module.h>
+#include <proc.h>
 
 MODULE_NAME("sched");
 

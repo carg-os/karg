@@ -1,7 +1,7 @@
 #include <syscall.h>
 
 #include <sched.h>
-#include <timer.h>
+#include <time.h>
 
 static void wakeup_proc(void *data) {
     sched_update_state((proc_t *) data, PROC_STATE_READY);
