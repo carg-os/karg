@@ -39,7 +39,7 @@ static u32 nr_devs = 0;
 static void isr(void *data) {
     u32 num = (usize) data;
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
-    dev_t tty_dev = {.driver = &tty_driver, .num = num};
+    dev_t tty_dev = {.driver = &TTY_DRIVER, .num = num};
     u8 byte = REG(num, RBR);
     switch (byte) {
     case '\r':

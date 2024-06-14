@@ -9,4 +9,4 @@ typedef struct {
     i32 (*ioctl)(u32 num, u32 req, va_list args);
 } driver_t;
 
-extern driver_t tty_driver;
+extern const driver_t TTY_DRIVER;

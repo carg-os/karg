@@ -56,19 +56,19 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     i32 stdin_fd = new_fd(proc);
     if (stdin_fd < 0)
         return stdin_fd;
-    proc->fds[stdin_fd].dev = make_dev(tty_driver, 0);
+    proc->fds[stdin_fd].dev = make_dev(TTY_DRIVER, 0);
     proc->fds[stdin_fd].flags |= FD_FLAG_READABLE;
 
     i32 stdout_fd = new_fd(proc);
     if (stdin_fd < 0)
         return stdin_fd;
-    proc->fds[stdout_fd].dev = make_dev(tty_driver, 0);
+    proc->fds[stdout_fd].dev = make_dev(TTY_DRIVER, 0);
     proc->fds[stdout_fd].flags |= FD_FLAG_WRITABLE;
 
     i32 stderr_fd = new_fd(proc);
     if (stdin_fd < 0)
         return stdin_fd;
-    proc->fds[stderr_fd].dev = make_dev(tty_driver, 0);
+    proc->fds[stderr_fd].dev = make_dev(TTY_DRIVER, 0);
     proc->fds[stderr_fd].flags |= FD_FLAG_WRITABLE;
 
     proc->state = PROC_STATE_INIT;

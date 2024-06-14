@@ -38,7 +38,7 @@ static void write_char(u32 num, char c) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     for (i32 y = 0; y < FONT_HEIGHT; y++) {
         for (i32 x = 0; x < FONT_WIDTH; x++) {
-            if (font[(u8) c][y] & 1 << (FONT_WIDTH - 1 - x)) {
+            if (FONT[(u8) c][y] & 1 << (FONT_WIDTH - 1 - x)) {
                 dev_ioctl(ctrl_blk->fb_dev, FB_WRITE_PIX,
                           ctrl_blk->cursor.x + x, ctrl_blk->cursor.y + y,
                           ctrl_blk->fg);

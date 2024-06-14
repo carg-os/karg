@@ -34,5 +34,5 @@ typedef struct {
 } dev_init_t;
 
 #define dev_init(compat, func)                                                 \
-    __section(.init.dev)                                                       \
-        __used static dev_init_t _DEV_INIT = {_MODULE_NAME, compat, func}
+    section(.init.dev)                                                         \
+        used static dev_init_t _DEV_INIT = {_MODULE_NAME, compat, func}

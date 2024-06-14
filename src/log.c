@@ -21,7 +21,7 @@ static void write(const char *str, usize size) {
         }
         return;
     }
-    dev_write(make_dev(tty_driver, 0), (const u8 *) str, size);
+    dev_write(make_dev(TTY_DRIVER, 0), (const u8 *) str, size);
 }
 
 static void kvprintf(const char *fmt, va_list args) {
@@ -87,7 +87,7 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
 }
 
 static i32 init(void) {
-    dev_write(make_dev(tty_driver, 0), (const u8 *) early_log, early_log_tail);
+    dev_write(make_dev(TTY_DRIVER, 0), (const u8 *) early_log, early_log_tail);
     inited = true;
     return 0;
 }

@@ -2,7 +2,6 @@
 
 #include <list.h>
 #include <time.h>
-#include <types.h>
 
 typedef struct {
     list_node_t node;

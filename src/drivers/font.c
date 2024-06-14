@@ -1,6 +1,6 @@
 #include <drivers/font.h>
 
-const u8 font[128][16] = {
+const u8 FONT[128][16] = {
     {
         0x00,
         0x00,

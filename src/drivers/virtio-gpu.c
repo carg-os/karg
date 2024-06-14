@@ -129,8 +129,8 @@ static u32 nr_devs = 0;
 #define STATUS_FEATURES_OK 8
 
 static virtio_desc_t desc[128];
-static virtio_avail_queue_t avail;
-static virtio_used_queue_t used;
+static virtio_avail_queue_t avail_queue;
+static virtio_used_queue_t used_queue;
 
 static struct virtio_gpu_resource_create_2d create_2d;
 static struct virtio_gpu_resource_attach_backing attach_backing;
@@ -148,7 +148,7 @@ static u32 fb[FB_WIDTH * FB_HEIGHT];
 static usize offset = 0;
 
 static void flush(u32 num, u32 y, u32 height) {
-    while (avail.idx != used.idx)
+    while (avail_queue.idx != used_queue.idx)
         ;
     transfer.r.x = 0;
     transfer.r.y = y;
@@ -181,8 +181,8 @@ static void flush(u32 num, u32 y, u32 height) {
     desc[3].flags = VIRTIO_DESC_FLAG_WRITE;
     desc[3].next = 0;
 
-    avail.ring[avail.idx++ % 128] = 0;
-    avail.ring[avail.idx++ % 128] = 2;
+    avail_queue.ring[avail_queue.idx++ % 128] = 0;
+    avail_queue.ring[avail_queue.idx++ % 128] = 2;
     REG(num, NOTIFY) = 0;
 }
 
@@ -236,8 +236,8 @@ i32 init_virtio_gpu(const dev_node_t *node) {
     REG(num, QUEUE_SEL) = 0;
     REG(num, QUEUE_NUM) = 128;
     REG(num, QUEUE_DESC_LOW) = (usize) desc;
-    REG(num, QUEUE_DRIVER_LOW) = (usize) &avail;
-    REG(num, QUEUE_DEVICE_LOW) = (usize) &used;
+    REG(num, QUEUE_DRIVER_LOW) = (usize) &avail_queue;
+    REG(num, QUEUE_DEVICE_LOW) = (usize) &used_queue;
 
     REG(num, QUEUE_READY) = 1;
 
@@ -349,11 +349,11 @@ i32 init_virtio_gpu(const dev_node_t *node) {
     desc[10].flags = VIRTIO_DESC_FLAG_WRITE;
     desc[10].next = 0;
 
-    avail.ring[avail.idx++] = 0;
-    avail.ring[avail.idx++] = 2;
-    avail.ring[avail.idx++] = 5;
-    avail.ring[avail.idx++] = 7;
-    avail.ring[avail.idx++] = 9;
+    avail_queue.ring[avail_queue.idx++] = 0;
+    avail_queue.ring[avail_queue.idx++] = 2;
+    avail_queue.ring[avail_queue.idx++] = 5;
+    avail_queue.ring[avail_queue.idx++] = 7;
+    avail_queue.ring[avail_queue.idx++] = 9;
     REG(num, NOTIFY) = 0;
 
     dev_t dev = {

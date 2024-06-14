@@ -28,7 +28,7 @@ static isize write(u32 num, const u8 *buf, usize size) {
     return size;
 }
 
-driver_t tty_driver = {
+const driver_t TTY_DRIVER = {
     .read = read,
     .write = write,
     .ioctl = nullptr,
