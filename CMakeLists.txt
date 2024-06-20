@@ -7,14 +7,9 @@ endif()
 
 add_executable(karg
     src/dev.c
-    src/drivers/fb.c
-    src/drivers/fbcon.c
-    src/drivers/font.c
     src/drivers/plic.c
     src/drivers/tty.c
     src/drivers/uart.c
-    src/drivers/virtio.c
-    src/drivers/virtio-gpu.c
     src/entry.S
     src/init.c
     src/intr.c
