@@ -9,7 +9,7 @@
 
 MODULE_NAME("uart");
 
-#define REG(num, reg)                                                          \
+#define reg(num, reg)                                                          \
     *((volatile u8 *) (ctrl_blks[num].addr + ctrl_blks[num].reg_size * reg))
 #define THR 0
 #define RBR 0
@@ -39,7 +39,7 @@ static void isr(void *data) {
     ctrl_blk_t *ctrl_blk = &ctrl_blks[num];
     dev_t tty_dev = make_dev(TTY_DRIVER, num);
 
-    u8 byte = REG(num, RBR);
+    u8 byte = reg(num, RBR);
     switch (byte) {
     case '\r':
         ctrl_blk->rx_buf[ctrl_blk->rx_tail++] = '\n';
@@ -83,9 +83,9 @@ static isize read(u32 num, u8 *buf, usize size) {
 }
 
 static void put_byte(u32 num, u8 byte) {
-    while (!(REG(num, LSR) & LSR_THRE))
+    while (!(reg(num, LSR) & LSR_THRE))
         ;
-    REG(num, THR) = byte;
+    reg(num, THR) = byte;
 }
 
 static isize write(u32 num, const u8 *buf, usize size) {
@@ -119,7 +119,7 @@ static i32 init_dev(const dev_node_t *node) {
     ctrl_blks[num].cursor_pos = 0;
 
     plic_enable_irq(node->irq);
-    REG(num, IER) = IER_ERBFI;
+    reg(num, IER) = IER_ERBFI;
     i32 res = intr_register_isr(node->irq, isr, (void *) (usize) num);
     if (res < 0)
         return res;
