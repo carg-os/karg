@@ -3,6 +3,7 @@
 #include <config.h>
 #include <dev.h>
 #include <driver.h>
+#include <hang.h>
 #include <init.h>
 #include <module.h>
 #include <stdarg.h>
@@ -80,6 +81,7 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
         break;
     case LOG_SEVERITY_PANIC:
         kprintf("[\x1B[41mpanic\x1B[0m] ");
+        hang();
         break;
     }
     kvprintf(fmt, args);

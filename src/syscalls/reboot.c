@@ -1,6 +1,7 @@
 #include <syscall.h>
 
 #include <errno.h>
+#include <hang.h>
 #include <sbi.h>
 
 typedef enum {
@@ -8,11 +9,6 @@ typedef enum {
     REBOOT_TYPE_SHUTDOWN = 1,
     REBOOT_TYPE_HANG = 2,
 } reboot_type_t;
-
-[[noreturn]] void hang(void) {
-    while (true)
-        ;
-}
 
 isize sys_reboot(const trapframe_t *frame) {
     reboot_type_t type = frame->a0;
