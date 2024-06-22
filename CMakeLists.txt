@@ -7,6 +7,7 @@ endif()
 
 add_executable(karg
     src/dev.c
+    src/drivers/ldisc.c
     src/drivers/plic.c
     src/drivers/tty.c
     src/drivers/uart.c

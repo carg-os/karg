@@ -1,5 +1,6 @@
 #include <dev.h>
 
+#include <errno.h>
 #include <init.h>
 #include <log.h>
 #include <module.h>
@@ -10,14 +11,20 @@ MODULE_NAME("dev");
 extern dev_init_t _dev_init_start, _dev_init_end;
 
 isize dev_read(dev_t dev, u8 *buf, usize size) {
+    if (!dev.driver->read)
+        return -ENXIO;
     return dev.driver->read(dev.num, buf, size);
 }
 
 isize dev_write(dev_t dev, const u8 *buf, usize size) {
+    if (!dev.driver->write)
+        return -ENXIO;
     return dev.driver->write(dev.num, buf, size);
 }
 
 i32 dev_ioctl(dev_t dev, u32 req, ...) {
+    if (!dev.driver->ioctl)
+        return -ENXIO;
     va_list args;
     va_start(args);
     i32 res = dev.driver->ioctl(dev.num, req, args);
@@ -26,6 +33,8 @@ i32 dev_ioctl(dev_t dev, u32 req, ...) {
 }
 
 i32 dev_vioctl(dev_t dev, u32 req, va_list args) {
+    if (!dev.driver->ioctl)
+        return -ENXIO;
     return dev.driver->ioctl(dev.num, req, args);
 }
 
