@@ -22,22 +22,6 @@ isize dev_write(dev_t dev, const u8 *buf, usize size) {
     return dev.driver->write(dev.num, buf, size);
 }
 
-i32 dev_ioctl(dev_t dev, u32 req, ...) {
-    if (!dev.driver->ioctl)
-        return -ENXIO;
-    va_list args;
-    va_start(args);
-    i32 res = dev.driver->ioctl(dev.num, req, args);
-    va_end(args);
-    return res;
-}
-
-i32 dev_vioctl(dev_t dev, u32 req, va_list args) {
-    if (!dev.driver->ioctl)
-        return -ENXIO;
-    return dev.driver->ioctl(dev.num, req, args);
-}
-
 static i32 init(void) {
     for (usize i = 0; DEV_TABLE[i].name; i++) {
         const dev_node_t *node = &DEV_TABLE[i];

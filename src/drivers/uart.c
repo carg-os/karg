@@ -44,7 +44,6 @@ static isize write(u32 num, const u8 *buf, usize size) {
 static const driver_t DRIVER = {
     .read = nullptr,
     .write = write,
-    .ioctl = nullptr,
 };
 
 static i32 init_dev(const dev_node_t *node) {
