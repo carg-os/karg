@@ -81,11 +81,13 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
         break;
     case LOG_SEVERITY_PANIC:
         kprintf("[\x1B[41mpanic\x1B[0m] ");
-        hang();
         break;
     }
     kvprintf(fmt, args);
     va_end(args);
+
+    if (severity == LOG_SEVERITY_PANIC)
+        hang();
 }
 
 static i32 init(void) {
