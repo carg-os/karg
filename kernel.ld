@@ -8,7 +8,7 @@ SECTIONS {
         *(.init)
     }
 
-    . = ALIGN(4K);
+    . = ALIGN(8);
     PROVIDE(_pre_init_start = .);
     .init.pre_init : {
         *(.init.pre_init)
