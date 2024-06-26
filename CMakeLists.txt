@@ -10,6 +10,7 @@ add_executable(karg
     src/arch/riscv/entry.S
     src/arch/riscv/intr.c
     src/arch/riscv/pm.c
+    src/arch/riscv/proc.c
     src/arch/riscv/proc.S
     src/arch/riscv/sbi.c
     src/arch/riscv/time.c

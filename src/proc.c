@@ -6,7 +6,8 @@
 #include <mm/page_alloc.h>
 
 void ctx_sw(usize **old_sp, usize **new_sp);
-void proc_entry(void);
+void proc_fill_stack(const proc_t *proc, void *entry, usize *usp, int argc,
+                     char *argv[]);
 
 proc_t *proc_table[PROC_TABLE_SIZE];
 
@@ -37,17 +38,7 @@ static i32 new_fd(proc_t *proc) {
     return -EAGAIN;
 }
 
-i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
-              char *argv[]) {
-    proc->pid = new_pid();
-    if (proc->pid < 0)
-        return proc->pid;
-    proc->flags = flags;
-
-    proc->parent = parent;
-    list_init_head(&proc->children);
-    list_init_head(&proc->zombie_children);
-
+static i32 init_fds(proc_t *proc) {
     for (usize i = 0; i < PROC_FD_CAPACITY; i++) {
         proc->fds[i].flags = 0;
     }
@@ -70,9 +61,10 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     proc->fds[stderr_fd].dev = make_dev(TTY_DRIVER, 0);
     proc->fds[stderr_fd].flags |= FD_FLAG_WRITABLE;
 
-    proc->state = PROC_STATE_INIT;
-    timer_init(&proc->timer);
+    return 0;
+}
 
+static i32 init_stacks(proc_t *proc, void *entry, int argc, char *argv[]) {
     proc->kern_stack = (usize *) page_alloc();
     proc->user_stack = (usize *) page_alloc();
     if (!proc->kern_stack || !proc->user_stack)
@@ -85,13 +77,32 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     }
 
     proc->sp = (usize *) ((usize) proc->kern_stack + PAGE_SIZE);
-    proc->sp -= 22;
-    proc->sp[21] = (usize) proc;
-    proc->sp[20] = (usize) entry;
-    proc->sp[19] = (usize) usp;
-    proc->sp[18] = argc;
-    proc->sp[17] = (usize) usp;
-    proc->sp[15] = (usize) proc_entry;
+    proc_fill_stack(proc, entry, usp, argc, argv);
+
+    return 0;
+}
+
+i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
+              char *argv[]) {
+    proc->pid = new_pid();
+    if (proc->pid < 0)
+        return proc->pid;
+    proc->flags = flags;
+
+    proc->parent = parent;
+    list_init_head(&proc->children);
+    list_init_head(&proc->zombie_children);
+
+    i32 res = init_fds(proc);
+    if (res < 0)
+        return res;
+
+    proc->state = PROC_STATE_INIT;
+    timer_init(&proc->timer);
+
+    res = init_stacks(proc, entry, argc, argv);
+    if (res < 0)
+        return res;
 
     proc_table[proc->pid] = proc;
     if (parent)
@@ -102,18 +113,8 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
 void proc_deinit(proc_t *proc) {
     list_remove(&proc->tree_node);
     proc_table[proc->pid] = nullptr;
-
     page_free(proc->user_stack);
     page_free(proc->kern_stack);
-}
-
-void proc_setup(proc_t *proc) {
-    csr_set_bits(sstatus, CSR_SSTATUS_SPIE);
-    if (proc->flags & PROC_FLAG_KERN) {
-        csr_set_bits(sstatus, CSR_SSTATUS_SPP);
-    } else {
-        csr_clear_bits(sstatus, CSR_SSTATUS_SPP);
-    }
 }
 
 void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc) {
