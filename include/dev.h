@@ -1,8 +1,6 @@
 #pragma once
 
 #include <driver.h>
-#include <drivers/plic.h>
-#include <types.h>
 #include <utils/compiler.h>
 
 typedef struct {
@@ -18,7 +16,7 @@ isize dev_write(dev_t dev, const u8 *buf, usize size);
 typedef struct {
     const char *name;
     usize addr;
-    irq_t irq;
+    u32 irq;
     u8 reg_size;
 } dev_node_t;
 

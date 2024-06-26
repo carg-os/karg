@@ -15,14 +15,14 @@ static usize base_addr = 0;
 #define INTR_CLAIM 0x201004
 #define INTR_COMPLETION 0x201004
 
-void plic_enable_irq(irq_t irq) {
+void plic_enable_irq(u32 irq) {
     reg(INTR_ENABLE(irq)) |= 1 << irq % 32;
     reg(INTR_PRIO(irq)) = 1;
 }
 
-irq_t plic_claim() { return reg(INTR_CLAIM); }
+u32 plic_claim() { return reg(INTR_CLAIM); }
 
-void plic_complete(irq_t irq) { reg(INTR_COMPLETION) = irq; }
+void plic_complete(u32 irq) { reg(INTR_COMPLETION) = irq; }
 
 static i32 init_dev(const dev_node_t *node) {
     base_addr = node->addr;

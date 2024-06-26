@@ -1,5 +1,7 @@
 #pragma once
 
+#include <types.h>
+
 #define csr_read(reg)                                                          \
     ({                                                                         \
         usize val;                                                             \

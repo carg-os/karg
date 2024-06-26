@@ -1,5 +1,6 @@
-#include <arch/riscv/sbi.h>
+#include <pm.h>
 
+#include <arch/riscv/sbi.h>
 #include <stddef.h>
 
 [[noreturn]] void pm_reboot(void) {

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <time.h>
 #include <types.h>
 
 typedef struct {
@@ -11,13 +10,13 @@ typedef struct {
 sbi_res_t sbi_ecall(i32 eid, i32 fid, ...);
 i32 sbi_map_err(isize err);
 
-#define EID_TIME 0x54494D45
+#define SBI_EID_TIME 0x54494D45
 
-static inline i32 sbi_set_timer(time_t time) {
-    return sbi_map_err(sbi_ecall(EID_TIME, 0, time).err);
+static inline i32 sbi_set_timer(u64 time) {
+    return sbi_map_err(sbi_ecall(SBI_EID_TIME, 0, time).err);
 }
 
-#define EID_SRST 0x53525354
+#define SBI_EID_SRST 0x53525354
 
 typedef enum {
     SBI_REBOOT_TYPE_SHUTDOWN = 0,
@@ -30,5 +29,5 @@ typedef enum {
 
 static inline i32 sbi_reboot(sbi_reboot_type_t type,
                              sbi_reboot_reason_t reason) {
-    return sbi_map_err(sbi_ecall(EID_SRST, 0, type, reason).err);
+    return sbi_map_err(sbi_ecall(SBI_EID_SRST, 0, type, reason).err);
 }

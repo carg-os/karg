@@ -2,12 +2,11 @@
 
 #include <config.h>
 #include <dev.h>
-#include <driver.h>
 #include <module/init.h>
 #include <module/module.h>
 #include <pm.h>
 #include <stdarg.h>
-#include <string.h>
+#include <utils/string.h>
 
 MODULE_NAME("log");
 

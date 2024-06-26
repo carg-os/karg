@@ -1,7 +1,6 @@
 #pragma once
 
 #include <list.h>
-#include <types.h>
 
 typedef struct {
     list_node_t wait_queue;

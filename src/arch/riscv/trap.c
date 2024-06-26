@@ -2,6 +2,7 @@
 
 #include <arch/riscv/constants.h>
 #include <arch/riscv/csr.h>
+#include <drivers/plic.h>
 #include <errno.h>
 #include <intr.h>
 #include <module/init.h>
@@ -25,9 +26,12 @@ void trap_handler(trapframe_t *frame) {
         case CSR_SCAUSE_TIMER_INTR:
             timer_isr();
             break;
-        case CSR_SCAUSE_EXT_INTR:
-            intr_isr();
+        case CSR_SCAUSE_EXT_INTR: {
+            u32 irq = plic_claim();
+            intr_isr(irq);
+            plic_complete(irq);
             break;
+        }
         }
     } else {
         switch (frame->scause) {

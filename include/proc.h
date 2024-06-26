@@ -4,7 +4,6 @@
 #include <fd.h>
 #include <list.h>
 #include <timer.h>
-#include <types.h>
 
 typedef i32 pid_t;
 

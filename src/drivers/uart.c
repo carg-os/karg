@@ -55,7 +55,7 @@ static i32 init_dev(const dev_node_t *node) {
     ctrl_blks[num].reg_size = node->reg_size;
 
     reg(num, IER) = IER_ERBFI;
-    plic_enable_irq(node->irq);
+    intr_enable_irq(node->irq);
     i32 res = intr_register_isr(node->irq, isr, (void *) (usize) num);
     if (res < 0)
         return res;
