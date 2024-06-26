@@ -11,27 +11,25 @@ MODULE_NAME("init");
 
 i32 init_modules(void) {
     log_info("entering the pre-initialization phase");
-    for (init_t *init_ptr = &_pre_init_start; init_ptr < &_pre_init_end;
-         init_ptr++) {
-        i32 res = init_ptr->init();
-        log_info("initialized %s", init_ptr->name);
+    for (init_t *init = &_pre_init_start; init < &_pre_init_end; init++) {
+        i32 res = init->init();
+        log_info("initialized %s", init->name);
         if (res < 0)
             return res;
     }
 
     log_info("entering the initialization phase");
-    for (init_t *init_ptr = &_init_start; init_ptr < &_init_end; init_ptr++) {
-        i32 res = init_ptr->init();
-        log_info("initialized %s", init_ptr->name);
+    for (init_t *init = &_init_start; init < &_init_end; init++) {
+        i32 res = init->init();
+        log_info("initialized %s", init->name);
         if (res < 0)
             return res;
     }
 
     log_info("entering the post-initialization phase");
-    for (init_t *init_ptr = &_post_init_start; init_ptr < &_post_init_end;
-         init_ptr++) {
-        i32 res = init_ptr->init();
-        log_info("initialized %s", init_ptr->name);
+    for (init_t *init = &_post_init_start; init < &_post_init_end; init++) {
+        i32 res = init->init();
+        log_info("initialized %s", init->name);
         if (res < 0)
             return res;
     }

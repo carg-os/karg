@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include <dev.h>
+#include <drivers/tty.h>
 #include <module/init.h>
 #include <module/module.h>
 #include <pm.h>

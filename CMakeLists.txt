@@ -13,6 +13,7 @@ add_executable(karg
     src/arch/riscv/proc.S
     src/arch/riscv/sbi.c
     src/arch/riscv/time.c
+    src/arch/riscv/timer.c
     src/arch/riscv/trap.c
     src/arch/riscv/trap.S
     src/dev.c
@@ -28,6 +29,7 @@ add_executable(karg
     src/module/init.c
     src/module/log.c
     src/platforms/virt.c
+    src/pm.c
     src/proc.c
     src/sched.c
     src/sync/sem.c

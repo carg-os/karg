@@ -1,5 +1,6 @@
 #include <sched.h>
 
+#include <arch.h>
 #include <module/init.h>
 #include <module/module.h>
 #include <proc.h>
@@ -12,9 +13,9 @@ static timer_t timer;
 
 proc_t *curr_proc = nullptr;
 
-void idle_task(void) {
+static void idle_task() {
     while (true) {
-        asm volatile("wfi");
+        wait_for_intr();
     }
 }
 

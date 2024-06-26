@@ -11,5 +11,6 @@ typedef struct {
 } tty_ctrl_blk_t;
 
 extern tty_ctrl_blk_t *tty_ctrl_blks[DRIVER_DEV_CAPACITY];
+extern const driver_t TTY_DRIVER;
 
 i32 tty_init_ctrl_blk(tty_ctrl_blk_t *ctrl_blk);

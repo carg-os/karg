@@ -12,9 +12,3 @@
     sbi_reboot(SBI_REBOOT_TYPE_SHUTDOWN, SBI_REBOOT_REASON_NONE);
     unreachable();
 }
-
-[[noreturn]] void pm_hang(void) {
-    while (true) {
-        asm volatile("wfi");
-    }
-}

@@ -1,22 +1,10 @@
 #include <timer.h>
 
-#include <arch/riscv/csr.h>
-#include <arch/riscv/sbi.h>
-#include <module/init.h>
-#include <module/module.h>
-
 extern const u32 TIMER_FREQ;
 
-MODULE_NAME("timer");
+void timer_set(time_t wait_time);
 
 static list_node_t wait_queue = list_head_init(wait_queue);
-
-static i32 init(void) {
-    csr_set_bits(sie, CSR_SIE_STIE);
-    return sbi_set_timer(TIME_MAX);
-}
-
-module_pre_init(init);
 
 void timer_init(timer_t *timer) { list_init_head(&timer->node); }
 
@@ -31,14 +19,14 @@ void timer_wait(timer_t *timer, time_t ns, void (*callback)(void *data),
         if (timer->time < entry->time) {
             list_insert(&entry->node, &timer->node);
             if (list_is_front(&wait_queue, &timer->node))
-                sbi_set_timer(timer->time);
+                timer_set(timer->time);
             return;
         }
     }
 
     list_push_back(&wait_queue, &timer->node);
     if (list_is_front(&wait_queue, &timer->node))
-        sbi_set_timer(timer->time);
+        timer_set(timer->time);
 }
 
 void timer_cancel(timer_t *timer) {
@@ -49,7 +37,7 @@ void timer_cancel(timer_t *timer) {
     time_t wait_time = TIME_MAX;
     if (!list_empty(&wait_queue))
         wait_time = list_first_entry(&wait_queue, timer_t, node)->time;
-    sbi_set_timer(wait_time);
+    timer_set(wait_time);
 }
 
 void timer_isr(void) {
@@ -59,7 +47,7 @@ void timer_isr(void) {
     time_t wait_time = TIME_MAX;
     if (!list_empty(&wait_queue))
         wait_time = list_first_entry(&wait_queue, timer_t, node)->time;
-    sbi_set_timer(wait_time);
+    timer_set(wait_time);
 
     timer->callback(timer->data);
 }
