@@ -1,11 +1,11 @@
-#include <log.h>
+#include <module/log.h>
 
 #include <config.h>
 #include <dev.h>
 #include <driver.h>
-#include <hang.h>
-#include <init.h>
-#include <module.h>
+#include <module/init.h>
+#include <module/module.h>
+#include <pm.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -87,7 +87,7 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
     va_end(args);
 
     if (severity == LOG_SEVERITY_PANIC)
-        hang();
+        pm_hang();
 }
 
 static i32 init(void) {

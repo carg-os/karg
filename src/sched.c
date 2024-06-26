@@ -1,7 +1,7 @@
 #include <sched.h>
 
-#include <init.h>
-#include <module.h>
+#include <module/init.h>
+#include <module/module.h>
 #include <proc.h>
 
 MODULE_NAME("sched");

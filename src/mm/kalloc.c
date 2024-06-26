@@ -1,8 +1,8 @@
-#include <kalloc.h>
+#include <mm/kalloc.h>
 
 #include <list.h>
-#include <mem.h>
-#include <page_alloc.h>
+#include <mm/page_alloc.h>
+#include <utils/mem.h>
 
 typedef struct {
     list_node_t node;

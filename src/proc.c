@@ -1,8 +1,8 @@
 #include <proc.h>
 
-#include <csr.h>
+#include <arch/riscv/csr.h>
 #include <errno.h>
-#include <page_alloc.h>
+#include <mm/page_alloc.h>
 
 void ctx_sw(usize **old_sp, usize **new_sp);
 void proc_entry(void);

@@ -1,8 +1,8 @@
 #include <syscall.h>
 
+#include <arch/riscv/sbi.h>
 #include <errno.h>
-#include <hang.h>
-#include <sbi.h>
+#include <pm.h>
 
 typedef enum {
     REBOOT_TYPE_REBOOT = 0,
@@ -15,11 +15,11 @@ isize sys_reboot(const trapframe_t *frame) {
 
     switch (type) {
     case REBOOT_TYPE_REBOOT:
-        return sbi_reboot(SBI_REBOOT_TYPE_REBOOT, SBI_REBOOT_REASON_NONE);
+        pm_reboot();
     case REBOOT_TYPE_SHUTDOWN:
-        return sbi_reboot(SBI_REBOOT_TYPE_SHUTDOWN, SBI_REBOOT_REASON_NONE);
+        pm_shutdown();
     case REBOOT_TYPE_HANG:
-        hang();
+        pm_hang();
     default:
         return -EINVAL;
     }

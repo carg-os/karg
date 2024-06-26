@@ -1,9 +1,9 @@
 #include <timer.h>
 
-#include <csr.h>
-#include <init.h>
-#include <module.h>
-#include <sbi.h>
+#include <arch/riscv/csr.h>
+#include <arch/riscv/sbi.h>
+#include <module/init.h>
+#include <module/module.h>
 
 extern const u32 TIMER_FREQ;
 

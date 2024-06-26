@@ -1,9 +1,9 @@
-#include <page_alloc.h>
+#include <mm/page_alloc.h>
 
 #include <config.h>
-#include <init.h>
 #include <list.h>
-#include <module.h>
+#include <module/init.h>
+#include <module/module.h>
 
 extern u8 _heap_start[KHEAP_SIZE];
 

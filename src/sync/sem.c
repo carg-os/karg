@@ -1,4 +1,4 @@
-#include <sem.h>
+#include <sync/sem.h>
 
 #include <sched.h>
 

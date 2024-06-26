@@ -2,7 +2,7 @@
 
 #include <drivers/tty.h>
 #include <errno.h>
-#include <kalloc.h>
+#include <mm/kalloc.h>
 
 static i32 lazy_init_ctrl_blk(u32 num) {
     if (num >= DRIVER_DEV_CAPACITY)

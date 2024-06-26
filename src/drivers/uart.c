@@ -2,7 +2,7 @@
 #include <drivers/ldisc.h>
 #include <errno.h>
 #include <intr.h>
-#include <module.h>
+#include <module/module.h>
 
 MODULE_NAME("uart");
 

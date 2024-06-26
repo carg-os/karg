@@ -1,11 +1,11 @@
 #include <trap.h>
 
-#include <csr.h>
+#include <arch/riscv/constants.h>
+#include <arch/riscv/csr.h>
 #include <errno.h>
-#include <init.h>
 #include <intr.h>
-#include <module.h>
-#include <rv.h>
+#include <module/init.h>
+#include <module/module.h>
 #include <syscall.h>
 #include <timer.h>
 

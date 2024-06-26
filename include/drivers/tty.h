@@ -1,7 +1,7 @@
 #pragma once
 
 #include <drivers/ldisc.h>
-#include <sem.h>
+#include <sync/sem.h>
 
 typedef struct {
     ldisc_ctrl_blk_t ldisc_ctrl_blk;

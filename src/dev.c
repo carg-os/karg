@@ -1,9 +1,9 @@
 #include <dev.h>
 
 #include <errno.h>
-#include <init.h>
-#include <log.h>
-#include <module.h>
+#include <module/init.h>
+#include <module/log.h>
+#include <module/module.h>
 #include <string.h>
 
 MODULE_NAME("dev");

@@ -1,4 +1,4 @@
-#include <init.h>
+#include <module/init.h>
 #include <sched.h>
 
 void init(void);

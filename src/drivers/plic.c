@@ -1,8 +1,8 @@
 #include <drivers/plic.h>
 
-#include <csr.h>
+#include <arch/riscv/csr.h>
 #include <dev.h>
-#include <module.h>
+#include <module/module.h>
 
 MODULE_NAME("plic");
 

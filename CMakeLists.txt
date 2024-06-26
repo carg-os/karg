@@ -6,23 +6,30 @@ if (NOT PLATFORM)
 endif()
 
 add_executable(karg
+    src/arch
+    src/arch/riscv/entry.S
+    src/arch/riscv/pm.c
+    src/arch/riscv/proc.S
+    src/arch/riscv/sbi.c
+    src/arch/riscv/time.c
+    src/arch/riscv/trap.c
+    src/arch/riscv/trap.S
     src/dev.c
     src/drivers/ldisc.c
     src/drivers/plic.c
     src/drivers/tty.c
     src/drivers/uart.c
-    src/entry.S
-    src/init.c
     src/intr.c
     src/kmain.c
-    src/log.c
     src/mm/kalloc.c
     src/mm/page_alloc.c
+    src/module
+    src/module/init.c
+    src/module/log.c
+    src/platforms/virt.c
     src/proc.c
-    src/proc.S
-    src/sbi.c
     src/sched.c
-    src/sem.c
+    src/sync/sem.c
     src/syscalls/exit.c
     src/syscalls/getpid.c
     src/syscalls/proc.c
@@ -33,10 +40,7 @@ add_executable(karg
     src/syscalls/wait.c
     src/syscalls/write.c
     src/syscalls/yield.c
-    src/time.c
     src/timer.c
-    src/trap.c
-    src/trap.S
 )
 
 if (PLATFORM STREQUAL VIRT)
@@ -64,4 +68,4 @@ target_compile_options(karg PRIVATE
     -Wextra
 )
 target_link_options(karg PRIVATE -nostdlib -T kernel.ld)
-target_include_directories(karg PRIVATE include)
+target_include_directories(karg PRIVATE include include/arch/riscv/common)

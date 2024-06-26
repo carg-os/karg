@@ -1,7 +1,7 @@
-#include <init.h>
+#include <module/init.h>
 
-#include <log.h>
-#include <module.h>
+#include <module/log.h>
+#include <module/module.h>
 
 extern init_t _pre_init_start, _pre_init_end;
 extern init_t _init_start, _init_end;

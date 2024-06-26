@@ -2,7 +2,7 @@
 
 #include <config.h>
 #include <errno.h>
-#include <kalloc.h>
+#include <mm/kalloc.h>
 
 tty_ctrl_blk_t *tty_ctrl_blks[DRIVER_DEV_CAPACITY];
 

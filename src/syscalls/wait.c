@@ -1,7 +1,7 @@
 #include <syscall.h>
 
 #include <errno.h>
-#include <kalloc.h>
+#include <mm/kalloc.h>
 #include <sched.h>
 
 isize sys_wait(const trapframe_t *frame) {
