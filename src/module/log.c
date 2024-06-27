@@ -12,13 +12,18 @@
 MODULE_NAME("log");
 
 static bool inited = false;
-static char early_log[LOG_BUF_SIZE];
-static usize early_log_tail = 0;
+static char log_buf[LOG_BUF_SIZE];
+static usize log_head, log_tail = 0;
 
 static void write(const char *str, usize size) {
     if (!inited) {
         for (usize i = 0; i < size; i++) {
-            early_log[early_log_tail++] = str[i];
+            log_buf[log_tail++] = str[i];
+            log_tail %= LOG_BUF_SIZE;
+            if (log_tail == log_head) {
+                log_head++;
+                log_head %= LOG_BUF_SIZE;
+            }
         }
         return;
     }
@@ -34,15 +39,6 @@ static void kvprintf(const char *fmt, va_list args) {
                 const char *str = va_arg(args, const char *);
                 write(str, str_len(str));
                 break;
-            }
-            case 'p': {
-                usize ptr = va_arg(args, usize);
-                char buf[sizeof(usize) * 2];
-                for (usize i = sizeof(buf); i > 0; i--) {
-                    buf[i - 1] = ((usize) ptr & 0xF) + '0';
-                    ptr >>= 4;
-                }
-                write(buf, sizeof(buf));
             }
             }
             break;
@@ -91,7 +87,12 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
 }
 
 static i32 init(void) {
-    dev_write(make_dev(TTY_DRIVER, 0), (const u8 *) early_log, early_log_tail);
+    dev_t tty_dev = make_dev(TTY_DRIVER, 0);
+    dev_write(tty_dev, (const u8 *) log_buf + log_head,
+              LOG_BUF_SIZE - log_head);
+    if (log_tail < log_head) {
+        dev_write(tty_dev, (const u8 *) log_buf, log_tail);
+    }
     inited = true;
     return 0;
 }
