@@ -15,6 +15,7 @@ build:
 	@cmake \
 		-B build \
 		-D CMAKE_TOOLCHAIN_FILE=$(CMAKE_TOOLCHAIN_FILE) \
+		-D ARCH=$(ARCH) \
 		-D PLATFORM=$(PLATFORM)
 
 FORCE:

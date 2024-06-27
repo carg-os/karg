@@ -1,22 +1,15 @@
 cmake_minimum_required(VERSION 3.29)
 project(karg C ASM)
 
+if (NOT ARCH)
+    set(ARCH RISCV)
+endif()
+
 if (NOT PLATFORM)
-    set (PLATFORM VIRT)
+    set(PLATFORM VIRT)
 endif()
 
 add_executable(karg
-    src/arch
-    src/arch/riscv/entry.S
-    src/arch/riscv/intr.c
-    src/arch/riscv/pm.c
-    src/arch/riscv/proc.c
-    src/arch/riscv/proc.S
-    src/arch/riscv/sbi.c
-    src/arch/riscv/time.c
-    src/arch/riscv/timer.c
-    src/arch/riscv/trap.c
-    src/arch/riscv/trap.S
     src/dev.c
     src/drivers/ldisc.c
     src/drivers/plic.c
@@ -48,6 +41,21 @@ add_executable(karg
     src/utils/mem.c
     src/utils/str.c
 )
+
+if (ARCH STREQUAL RISCV)
+    target_sources(karg PRIVATE
+        src/arch/riscv/entry.S
+        src/arch/riscv/intr.c
+        src/arch/riscv/pm.c
+        src/arch/riscv/proc.c
+        src/arch/riscv/proc.S
+        src/arch/riscv/sbi.c
+        src/arch/riscv/time.c
+        src/arch/riscv/timer.c
+        src/arch/riscv/trap.c
+        src/arch/riscv/trap.S
+    )
+endif()
 
 if (PLATFORM STREQUAL VIRT)
     target_sources(karg PRIVATE
