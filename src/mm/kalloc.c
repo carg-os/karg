@@ -51,7 +51,7 @@ void *kcalloc(usize size, usize n) {
     void *res = kmalloc(size);
     if (!res)
         return res;
-    memset(res, 0, size);
+    mem_set(res, 0, size);
     return res;
 }
 

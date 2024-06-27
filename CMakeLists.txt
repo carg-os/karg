@@ -45,6 +45,8 @@ add_executable(karg
     src/syscalls/write.c
     src/syscalls/yield.c
     src/timer.c
+    src/utils/mem.c
+    src/utils/str.c
 )
 
 if (PLATFORM STREQUAL VIRT)

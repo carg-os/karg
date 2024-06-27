@@ -4,7 +4,7 @@
 #include <module/init.h>
 #include <module/log.h>
 #include <module/module.h>
-#include <utils/string.h>
+#include <utils/str.h>
 
 MODULE_NAME("dev");
 
@@ -27,10 +27,10 @@ static i32 init(void) {
         const dev_node_t *node = &DEV_TABLE[i];
         for (dev_init_t *dev_init = &_dev_init_start; dev_init < &_dev_init_end;
              dev_init++) {
-            if (strcmp(dev_init->compat, node->name) == 0) {
+            if (str_cmp(dev_init->compat, node->name) == 0) {
                 i32 res = dev_init->init(node);
                 log_info("loaded driver %s for device %s", dev_init->name,
-                         dev_init->compat);
+                         node->name);
                 if (res < 0)
                     return res;
                 break;

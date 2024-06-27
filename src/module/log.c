@@ -7,7 +7,7 @@
 #include <module/module.h>
 #include <pm.h>
 #include <stdarg.h>
-#include <utils/string.h>
+#include <utils/str.h>
 
 MODULE_NAME("log");
 
@@ -32,7 +32,7 @@ static void kvprintf(const char *fmt, va_list args) {
             switch (*++fmt) {
             case 's': {
                 const char *str = va_arg(args, const char *);
-                write(str, strlen(str));
+                write(str, str_len(str));
                 break;
             }
             case 'p': {
