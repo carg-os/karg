@@ -60,14 +60,13 @@ static i32 init_dev(const dev_node_t *node) {
     if (res < 0)
         return res;
 
-    ldisc_config_t config = {
-        .crlf = true,
-    };
-    res = ldisc_register_src(num, (ldisc_dev_t){make_dev(DRIVER, num), config});
+    ldisc_dev_t ldisc_dev;
+    ldisc_dev.dev = make_dev(DRIVER, num);
+    ldisc_dev.config.crlf = true;
+    res = ldisc_register_src(num, &ldisc_dev);
     if (res < 0)
         return res;
-    res =
-        ldisc_register_sink(num, (ldisc_dev_t){make_dev(DRIVER, num), config});
+    res = ldisc_register_sink(num, &ldisc_dev);
     if (res < 0)
         return res;
 

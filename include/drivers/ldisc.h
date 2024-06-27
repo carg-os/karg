@@ -19,7 +19,7 @@ typedef struct {
     u32 cursor_pos;
 } ldisc_ctrl_blk_t;
 
-i32 ldisc_register_src(u32 num, ldisc_dev_t dev);
-i32 ldisc_register_sink(u32 num, ldisc_dev_t dev);
+i32 ldisc_register_src(u32 num, const ldisc_dev_t *dev);
+i32 ldisc_register_sink(u32 num, const ldisc_dev_t *dev);
 void ldisc_recv_byte(u32 num, u8 byte);
 isize ldisc_write(u32 num, const u8 *buf, usize size);

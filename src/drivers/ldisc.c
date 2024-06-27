@@ -26,23 +26,23 @@ static i32 lazy_init_ctrl_blk(u32 num) {
     return 0;
 }
 
-i32 ldisc_register_src(u32 num, ldisc_dev_t dev) {
+i32 ldisc_register_src(u32 num, const ldisc_dev_t *dev) {
     i32 res = lazy_init_ctrl_blk(num);
     if (res < 0)
         return res;
     ldisc_ctrl_blk_t *ctrl_blk = &tty_ctrl_blks[num]->ldisc_ctrl_blk;
-    ctrl_blk->src = dev;
+    ctrl_blk->src = *dev;
     return 0;
 }
 
-i32 ldisc_register_sink(u32 num, ldisc_dev_t dev) {
+i32 ldisc_register_sink(u32 num, const ldisc_dev_t *dev) {
     i32 res = lazy_init_ctrl_blk(num);
     if (res < 0)
         return res;
     ldisc_ctrl_blk_t *ctrl_blk = &tty_ctrl_blks[num]->ldisc_ctrl_blk;
     if (ctrl_blk->nr_sinks >= TTY_SINK_CAPACITY)
         return -EAGAIN;
-    ctrl_blk->sinks[ctrl_blk->nr_sinks++] = dev;
+    ctrl_blk->sinks[ctrl_blk->nr_sinks++] = *dev;
     return 0;
 }
 
