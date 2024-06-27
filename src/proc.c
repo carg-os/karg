@@ -6,8 +6,7 @@
 #include <mm/page_alloc.h>
 
 void ctx_sw(usize **old_sp, usize **new_sp);
-void proc_fill_stack(const proc_t *proc, void *entry, usize *usp, int argc,
-                     char *argv[]);
+void proc_fill_stack(proc_t *proc, const proc_config_t *config, usize *usp);
 
 proc_t *proc_table[PROC_TABLE_SIZE];
 
@@ -64,7 +63,7 @@ static i32 init_fds(proc_t *proc) {
     return 0;
 }
 
-static i32 init_stacks(proc_t *proc, void *entry, int argc, char *argv[]) {
+static i32 init_stacks(proc_t *proc, const proc_config_t *config) {
     proc->kern_stack = (usize *) page_alloc();
     proc->user_stack = (usize *) page_alloc();
     if (!proc->kern_stack || !proc->user_stack)
@@ -72,24 +71,23 @@ static i32 init_stacks(proc_t *proc, void *entry, int argc, char *argv[]) {
 
     usize *usp = (usize *) ((usize) proc->user_stack + PAGE_SIZE);
     *--usp = 0;
-    for (i32 i = 0; i < argc; i++) {
-        *--usp = (usize) argv[argc - 1 - i];
+    for (i32 i = 0; i < config->argc; i++) {
+        *--usp = (usize) config->argv[config->argc - 1 - i];
     }
 
     proc->sp = (usize *) ((usize) proc->kern_stack + PAGE_SIZE);
-    proc_fill_stack(proc, entry, usp, argc, argv);
+    proc_fill_stack(proc, config, usp);
 
     return 0;
 }
 
-i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
-              char *argv[]) {
+i32 proc_init(proc_t *proc, const proc_config_t *config) {
     proc->pid = new_pid();
     if (proc->pid < 0)
         return proc->pid;
-    proc->flags = flags;
+    proc->flags = config->flags;
 
-    proc->parent = parent;
+    proc->parent = config->parent;
     list_init_head(&proc->children);
     list_init_head(&proc->zombie_children);
 
@@ -100,13 +98,13 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     proc->state = PROC_STATE_INIT;
     timer_init(&proc->timer);
 
-    res = init_stacks(proc, entry, argc, argv);
+    res = init_stacks(proc, config);
     if (res < 0)
         return res;
 
     proc_table[proc->pid] = proc;
-    if (parent)
-        list_push_back(&parent->children, &proc->tree_node);
+    if (config->parent)
+        list_push_back(&config->parent->children, &proc->tree_node);
     return 0;
 }
 
