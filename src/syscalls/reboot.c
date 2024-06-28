@@ -1,6 +1,5 @@
 #include <syscall.h>
 
-#include <arch/riscv/sbi.h>
 #include <errno.h>
 #include <pm.h>
 

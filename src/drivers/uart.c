@@ -1,4 +1,3 @@
-#include <config.h>
 #include <drivers/ldisc.h>
 #include <errno.h>
 #include <intr.h>

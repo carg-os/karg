@@ -12,7 +12,6 @@ static proc_t init_proc;
 
 [[noreturn]] void kmain(void) {
     init_modules();
-
     proc_config_t proc_config;
     proc_config.entry = init;
     proc_config.flags = 0;
@@ -24,8 +23,5 @@ static proc_t init_proc;
         log_panic("errno %s is returned when initializing init process",
                   errno_name(-res));
     sched_update_state(&init_proc, PROC_STATE_READY);
-
     sched_start();
-
-    unreachable();
 }

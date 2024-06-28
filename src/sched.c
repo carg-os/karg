@@ -3,7 +3,6 @@
 #include <arch.h>
 #include <module/init.h>
 #include <module/module.h>
-#include <proc.h>
 
 MODULE_NAME("sched");
 
@@ -85,12 +84,13 @@ static void sched_preempt(void *data) {
     sched_resched();
 }
 
-void sched_start(void) {
+[[noreturn]] void sched_start(void) {
     timer_wait(&timer, SCHED_TIMESLICE, sched_preempt, nullptr);
     sched_resched();
+    unreachable();
 }
 
-void sched_resched() {
+void sched_resched(void) {
     proc_t *old_proc = curr_proc;
     if (old_proc && old_proc->state == PROC_STATE_CURR)
         sched_update_state(old_proc, PROC_STATE_READY);

@@ -1,6 +1,5 @@
 #include <drivers/tty.h>
 
-#include <config.h>
 #include <errno.h>
 #include <mm/kalloc.h>
 

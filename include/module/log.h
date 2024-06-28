@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 typedef enum {
     LOG_SEVERITY_DEBUG,
     LOG_SEVERITY_INFO,
@@ -22,4 +24,8 @@ void klogf(log_severity_t severity, const char *fmt, ...);
 #define log_critical(fmt, ...)                                                 \
     klogf(LOG_SEVERITY_CRITICAL, "%s: " fmt "\n", _MODULE_NAME, ##__VA_ARGS__)
 #define log_panic(fmt, ...)                                                    \
-    klogf(LOG_SEVERITY_PANIC, "%s: " fmt "\n", _MODULE_NAME, ##__VA_ARGS__);
+    {                                                                          \
+        klogf(LOG_SEVERITY_PANIC, "%s: " fmt "\n", _MODULE_NAME,               \
+              ##__VA_ARGS__);                                                  \
+        unreachable();                                                         \
+    }

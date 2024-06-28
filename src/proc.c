@@ -1,6 +1,5 @@
 #include <proc.h>
 
-#include <arch/riscv/csr.h>
 #include <drivers/tty.h>
 #include <errno.h>
 #include <mm/page_alloc.h>
