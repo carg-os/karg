@@ -59,17 +59,19 @@ void ldisc_recv_byte(u32 num, u8 byte) {
     switch (byte) {
     case '\x7F':
         if (ctrl_blk->cursor_pos > 0) {
-            if (tty_ctrl_blk->rx_tail == 0) {
+            if (tty_ctrl_blk->rx_tail == 0)
                 tty_ctrl_blk->rx_tail = TTY_BUF_SIZE;
-            }
             tty_ctrl_blk->rx_tail--;
             ctrl_blk->cursor_pos--;
             ldisc_write(num, (const u8 *) "\b \b", 3);
         }
         break;
-    default:
-        tty_ctrl_blk->rx_buf[tty_ctrl_blk->rx_tail++] = byte;
-        tty_ctrl_blk->rx_tail %= TTY_BUF_SIZE;
+    default: {
+        usize next_tail = (tty_ctrl_blk->rx_tail + 1) % TTY_BUF_SIZE;
+        if (next_tail == tty_ctrl_blk->rx_head)
+            break;
+        tty_ctrl_blk->rx_buf[tty_ctrl_blk->rx_tail] = byte;
+        tty_ctrl_blk->rx_tail = next_tail;
         ctrl_blk->cursor_pos++;
         if (byte == '\n') {
             sem_signaln(&tty_ctrl_blk->rx_sem, ctrl_blk->cursor_pos);
@@ -77,6 +79,7 @@ void ldisc_recv_byte(u32 num, u8 byte) {
         }
         ldisc_write(num, &byte, 1);
         break;
+    }
     }
 }
 
