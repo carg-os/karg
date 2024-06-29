@@ -25,17 +25,23 @@ isize dev_write(dev_t dev, const u8 *buf, usize size) {
 static i32 init(void) {
     for (usize i = 0; DEV_TABLE[i].name; i++) {
         const dev_node_t *node = &DEV_TABLE[i];
-        for (dev_init_t *dev_init = &_dev_init_start; dev_init < &_dev_init_end;
+        dev_init_t *dev_init;
+        for (dev_init = &_dev_init_start; dev_init < &_dev_init_end;
              dev_init++) {
             if (str_cmp(dev_init->compat, node->name) == 0) {
                 i32 res = dev_init->init(node);
-                log_info("loaded driver %s for device %s", dev_init->name,
-                         node->name);
-                if (res < 0)
-                    return res;
+                if (res < 0) {
+                    log_critical("driver %s returned errno %s for device %s",
+                                 dev_init->name, errno_name(-res), node->name);
+                } else {
+                    log_info("loaded driver %s for device %s", dev_init->name,
+                             node->name);
+                }
                 break;
             }
         }
+        if (dev_init == &_dev_init_end)
+            log_critical("no driver is found for device %s", node->name);
     }
     return 0;
 }

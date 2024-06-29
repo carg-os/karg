@@ -17,4 +17,4 @@ typedef struct {
     section(.init.post_init)                                                   \
         used static const init_t _POST_INIT = {_MODULE_NAME, func}
 
-i32 init_modules(void);
+void init_modules(void);

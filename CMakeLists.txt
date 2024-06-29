@@ -15,6 +15,7 @@ add_executable(karg
     src/drivers/plic.c
     src/drivers/tty.c
     src/drivers/uart.c
+    src/errno.c
     src/intr.c
     src/kmain.c
     src/mm/kalloc.c

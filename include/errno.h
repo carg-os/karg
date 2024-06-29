@@ -1,5 +1,7 @@
 #pragma once
 
+#include <types.h>
+
 #define E2BIG 7
 #define EACCES 13
 #define EADDRINUSE 112
@@ -81,3 +83,5 @@
 #define ETXTBSY 26
 #define EWOULDBLOCK EAGAIN
 #define EXDEV 18
+
+const char *errno_name(i32 errno);
