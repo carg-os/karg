@@ -19,13 +19,8 @@ static void idle_task() {
 }
 
 static i32 init(void) {
-    proc_config_t proc_config;
-    proc_config.entry = idle_task;
-    proc_config.flags = PROC_FLAG_KERN;
-    proc_config.parent = nullptr;
-    proc_config.argc = 0;
-    proc_config.argv = nullptr;
-    i32 res = proc_init(&idle_proc, &proc_config);
+    i32 res =
+        proc_init(&idle_proc, idle_task, PROC_FLAG_KERN, nullptr, 0, nullptr);
     if (res < 0)
         return res;
     sched_update_state(&idle_proc, PROC_STATE_READY);

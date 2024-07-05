@@ -42,17 +42,10 @@ typedef struct proc {
     usize *sp;
 } proc_t;
 
-typedef struct {
-    void *entry;
-    u32 flags;
-    proc_t *parent;
-    i32 argc;
-    char **argv;
-} proc_config_t;
-
 extern proc_t *proc_table[];
 
-i32 proc_init(proc_t *proc, const proc_config_t *config);
+i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
+              const char **argv);
 void proc_deinit(proc_t *proc);
 void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc);
 void proc_adopt(proc_t *new_parent, proc_t *proc);

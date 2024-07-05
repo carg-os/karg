@@ -6,7 +6,7 @@
 
 isize sys_proc(const trapframe_t *frame) {
     void *entry = (void *) frame->a0;
-    char **argv = (char **) frame->a1;
+    const char **argv = (const char **) frame->a1;
     if (!entry || !argv)
         return -EFAULT;
 
@@ -18,13 +18,7 @@ isize sys_proc(const trapframe_t *frame) {
     proc_t *proc = (proc_t *) kmalloc(sizeof(proc_t));
     if (!proc)
         return -ENOMEM;
-    proc_config_t proc_config;
-    proc_config.entry = entry;
-    proc_config.flags = 0;
-    proc_config.parent = curr_proc;
-    proc_config.argc = argc;
-    proc_config.argv = argv;
-    i32 res = proc_init(proc, &proc_config);
+    i32 res = proc_init(proc, entry, 0, curr_proc, argc, argv);
     if (res < 0)
         return res;
 

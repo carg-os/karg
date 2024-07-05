@@ -4,13 +4,14 @@
 
 void proc_entry(void);
 
-void proc_fill_stack(proc_t *proc, const proc_config_t *config, usize *usp) {
+void proc_fill_stack(proc_t *proc, void *entry, usize usp, i32 argc,
+                     char *argv) {
     proc->sp -= 22;
     proc->sp[21] = (usize) proc;
-    proc->sp[20] = (usize) config->entry;
-    proc->sp[19] = (usize) usp;
-    proc->sp[18] = config->argc;
-    proc->sp[17] = (usize) config->argv;
+    proc->sp[20] = (usize) entry;
+    proc->sp[19] = usp & ~0xF;
+    proc->sp[18] = argc;
+    proc->sp[17] = (usize) argv;
     proc->sp[15] = (usize) proc_entry;
 }
 
