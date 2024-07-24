@@ -7,8 +7,7 @@ typedef struct list_node {
     struct list_node *prev, *next;
 } list_node_t;
 
-#define list_head_init(name)                                                   \
-    { &name, &name }
+#define list_head_init(name) {&name, &name}
 
 static inline void list_init_head(list_node_t *head) {
     head->prev = head;
@@ -32,7 +31,7 @@ static inline bool list_is_back(list_node_t *head, list_node_t *node) {
 }
 
 #define list_entry(node, type, member)                                         \
-    ((type *) ((u8 *) (node) -offsetof(type, member)))
+    ((type *) ((u8 *) (node) - offsetof(type, member)))
 #define list_first_entry(head, type, member)                                   \
     list_entry(list_front(head), type, member)
 #define list_last_entry(head, type, member)                                    \
