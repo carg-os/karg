@@ -30,6 +30,15 @@ static void write(const char *str, usize size) {
     dev_write(make_dev(TTY_DRIVER, 0), (const u8 *) str, size);
 }
 
+static void flush(void) {
+    dev_t tty_dev = make_dev(TTY_DRIVER, 0);
+    dev_write(tty_dev, (const u8 *) log_buf + log_head,
+              LOG_BUF_SIZE - log_head);
+    if (log_tail < log_head) {
+        dev_write(tty_dev, (const u8 *) log_buf, log_tail);
+    }
+}
+
 static void kvprintf(const char *fmt, va_list args) {
     while (*fmt) {
         switch (*fmt) {
@@ -82,17 +91,14 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
     kvprintf(fmt, args);
     va_end(args);
 
-    if (severity == LOG_SEVERITY_PANIC)
+    if (severity == LOG_SEVERITY_PANIC) {
+	flush();
         pm_hang();
+    }
 }
 
 static i32 init(void) {
-    dev_t tty_dev = make_dev(TTY_DRIVER, 0);
-    dev_write(tty_dev, (const u8 *) log_buf + log_head,
-              LOG_BUF_SIZE - log_head);
-    if (log_tail < log_head) {
-        dev_write(tty_dev, (const u8 *) log_buf, log_tail);
-    }
+    flush();
     inited = true;
     return 0;
 }
