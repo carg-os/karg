@@ -57,6 +57,7 @@ if (ARCH STREQUAL RISCV)
         src/arch/riscv/timer.c
         src/arch/riscv/trap.c
         src/arch/riscv/trap.S
+	src/arch/riscv/vm.c
     )
 endif()
 

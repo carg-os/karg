@@ -1,21 +1,5 @@
     .section .text
 
-    .global proc_entry
-proc_entry:
-    ld a0, 40(sp)
-    jal proc_setup
-
-    add t0, sp, 48
-    ld t1, 32(sp)
-    csrw sscratch, t0
-    csrw sepc, t1
-
-    ld a0, 16(sp)
-    ld a1, 8(sp)
-
-    ld sp, 24(sp)
-    sret
-
     .global ctx_sw
 ctx_sw:
     add sp, sp, -128

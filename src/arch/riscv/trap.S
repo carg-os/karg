@@ -1,8 +1,10 @@
+#include <mm/page_alloc.h>
+
     .section .text
 
-    .global trap_entry
-    .align 2
-trap_entry:
+    .global trampoline
+    .balign PAGE_SIZE
+trampoline:
     csrrw sp, sscratch, sp
     add sp, sp, -176
 
@@ -37,9 +39,23 @@ trap_entry:
     sd t5, 16(sp)
     sd t6, 8(sp)
 
+    csrr t0, satp
+    sd t0, 0(sp)
+
+    sfence.vma zero, zero
+    csrw satp, zero
+    sfence.vma zero, zero
+
     mv a0, sp
     add a0, a0, 80
     jal trap_handler
+
+    .global proc_entry
+proc_entry:
+    sfence.vma zero, zero
+    ld t0, 0(sp)
+    csrw satp, t0 
+    sfence.vma zero, zero
 
     ld t6, 8(sp)
     ld t5, 16(sp)

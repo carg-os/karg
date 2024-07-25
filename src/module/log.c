@@ -49,6 +49,19 @@ static void kvprintf(const char *fmt, va_list args) {
                 write(str, str_len(str));
                 break;
             }
+            case 'p': {
+                usize addr = va_arg(args, usize);
+                char buf[16];
+                for (int i = 0; i < 16; i++) {
+                    u8 nibble = (addr >> (i * 4)) & 0xF;
+                    if (nibble < 10) {
+                        buf[15 - i] = nibble + '0';
+                    } else {
+                        buf[15 - i] = nibble - 10 + 'A';
+                    }
+                }
+                write(buf, 16);
+            }
             }
             break;
         default:
@@ -92,7 +105,7 @@ void klogf(log_severity_t severity, const char *fmt, ...) {
     va_end(args);
 
     if (severity == LOG_SEVERITY_PANIC) {
-	flush();
+        flush();
         pm_hang();
     }
 }

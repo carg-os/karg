@@ -1,25 +1,28 @@
 #include <proc.h>
 
 #include <arch/riscv/csr.h>
+#include <mm/page_alloc.h>
 
-void proc_entry(void);
+extern void *init_page_table;
 
 void proc_fill_stack(proc_t *proc, void *entry, usize usp, i32 argc,
                      char *argv) {
-    proc->sp -= 22;
-    proc->sp[21] = (usize) proc;
-    proc->sp[20] = (usize) entry;
-    proc->sp[19] = usp & ~0xF;
-    proc->sp[18] = argc;
-    proc->sp[17] = (usize) argv;
-    proc->sp[15] = (usize) proc_entry;
-}
+    void proc_entry(void);
 
-void proc_setup(proc_t *proc) {
-    csr_set_bits(sstatus, CSR_SSTATUS_SPIE);
+    usize sstatus = csr_read(sstatus);
+    sstatus |= CSR_SSTATUS_SPIE;
     if (proc->flags & PROC_FLAG_KERN) {
-        csr_set_bits(sstatus, CSR_SSTATUS_SPP);
+        sstatus |= CSR_SSTATUS_SPP;
     } else {
-        csr_clear_bits(sstatus, CSR_SSTATUS_SPP);
+        sstatus &= ~CSR_SSTATUS_SPP;
     }
+
+    proc->sp -= 38;
+    proc->sp[31] = (usize) argv;
+    proc->sp[30] = argc;
+    proc->sp[27] = (usize) entry;
+    proc->sp[26] = sstatus;
+    proc->sp[25] = usp & ~0xF;
+    proc->sp[16] = 8ULL << 60 | (usize) init_page_table / PAGE_SIZE;
+    proc->sp[15] = (usize) proc_entry;
 }

@@ -51,7 +51,7 @@ void sched_update_state(proc_t *proc, proc_state_t state) {
 
     switch (state) {
     case PROC_STATE_READY:
-        list_push_back(&ready_queue, &proc->node);
+        list_push_front(&ready_queue, &proc->node);
         break;
     case PROC_STATE_CURR:
         curr_proc = proc;

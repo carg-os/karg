@@ -1,7 +1,7 @@
 #include <trap.h>
 
-#include <arch/riscv/constants.h>
 #include <arch/riscv/csr.h>
+#include <arch/riscv/riscv.h>
 #include <drivers/plic.h>
 #include <errno.h>
 #include <intr.h>
@@ -13,8 +13,8 @@
 MODULE_NAME("trap");
 
 static i32 init(void) {
-    void trap_entry(void);
-    csr_write(stvec, trap_entry);
+    void trampoline(void);
+    csr_write(stvec, trampoline);
     return 0;
 }
 
