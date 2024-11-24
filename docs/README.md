@@ -27,7 +27,7 @@ Karg is an educational monolithic kernel designed to be the main component of [C
 * **Preemptive scheduler with priority** \
   The current scheduler simply implements a round-robin strategy, combined with a priority queue that sorts processes based on their priority. When performing a context switch, the scheduler selects the highest-priority process from the ready queue (which contains only processes that are ready to run) and sets it as the currently executing process. The global timer is then updated and passed to the time management subsystem to wait for the next tick.
 
-  For context switching, only callee-saved registers are backed up and restored, as the caller-saved registers are already saved by the interrupt handler during the entry to the interrupt handler.
+  For context switching, only callee-saved registers are backed up and restored, as the caller-saved registers are already saved during the entry to the interrupt handler.
  
 * **Time management** \
   Whenever a waiting operation is triggered by either the scheduler's new time tick or the invocation of the `sleep` system call, the time management subsystem inserts a new timer entry into an ordered callback queue. Each timer entry is then sorted based on its specified time. When the timer expires, the corresponding callback is executed, and the system updates the time for the next clock interrupt. This mechanism ensures efficient and accurate handling of time-dependent operations, such as process sleep and event waiting.
@@ -55,8 +55,10 @@ Karg is an educational monolithic kernel designed to be the main component of [C
   The general device driver interface provides six functions: `open`, `close`, `read`, `write`, `seek`, and `ioctl`. Each driver manages its own devices, which are represented by `dev_t` in the file descriptors and identified by a minor device number. Additionally, drivers that do not directly correspond to physical hardware, but instead serve as abstraction layers, such as the TTY and line discipline subsystems, are also implemented.
 
   * **TTY subsystem and line discipline** \
+    The TTY subsystem is responsible for managing various text-based hardware devices in the system. It provides a read-write abstraction that can be bound to an input source and multiple output sinks. The line discipline subsystem, on the other hand, processes and converts special characters (such as CRLF) and ANSI escape sequences before passing the requests to the underlying driver, with buffering applied.
 
   * **VirtIO and VirtIO-GPU** \
+    The system automatically detects VirtIO-MMIO devices in the address space and invokes their corresponding drivers. It then allocates and creates a linked list of descriptors, which are passed to the VirtIO device's queue when a command needs to be sent. Additionally, VirtIO-GPU is supported for displaying content in the framebuffer, using tricks such as dynamically changing the framebuffer address. This enables functions like page scrolling to be performed without frequent memory copying.
 
 ## Usage
 Karg is the kernel of the CargOS operating system, but it is not a complete OS on its own. To help you build and run the full CargOS system, we provide a separate repository that automatically clones and assembles all necessary components, including the kernel, the init process, the C standard library implementation and a Lua port. For more details, please visit [CargOS](https://github.com/carg-os/carg-os).
