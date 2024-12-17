@@ -1,14 +1,11 @@
+#include <elf.h>
+
 #include <errno.h>
 #include <init.h>
 #include <math.h>
 #include <mm/page_alloc.h>
 #include <mm/vm.h>
-#include <module/init.h>
-#include <module/log.h>
-#include <module/module.h>
 #include <utils/mem.h>
-
-MODULE_NAME("elf");
 
 enum {
     EI_MAG0,
@@ -56,9 +53,6 @@ typedef struct {
     usize align;
 } prog_hdr_t;
 
-void *init_elf_entry;
-void *init_page_table;
-
 static i32 check_ident(const u8 *ident) {
     if (ident[EI_MAG0] != 0x7F)
         return false;
@@ -81,9 +75,9 @@ static i32 check_compat(const u8 *ident) {
     return true;
 }
 
-static i32 init(void) {
+i32 elf_load(elf_load_res_t *load_res) {
     const elf_hdr_t *elf_hdr = (const elf_hdr_t *) INIT_ELF;
-    init_elf_entry = (void *) elf_hdr->entry;
+    load_res->entry = (void *) elf_hdr->entry;
 
     if (!check_ident(elf_hdr->ident))
         return -EACCES;
@@ -91,8 +85,8 @@ static i32 init(void) {
     if (!check_compat(elf_hdr->ident) || elf_hdr->type != 2)
         return -EINVAL;
 
-    init_page_table = vm_create_page_table();
-    if (!init_page_table)
+    load_res->page_table = vm_create_page_table();
+    if (!load_res->page_table)
         return -ENOMEM;
 
     const prog_hdr_t *prog_hdrs =
@@ -119,8 +113,8 @@ static i32 init(void) {
                 const void *src = INIT_ELF + prog_hdr->offset + offset;
                 mem_copy(page, src, min(prog_hdr->filesz - offset, PAGE_SIZE));
             }
-            i32 res = vm_map_page(init_page_table, prog_hdr->vaddr + offset,
-                                  page, flags);
+            i32 res = vm_map_page(load_res->page_table,
+                                  prog_hdr->vaddr + offset, page, flags);
             if (res < 0)
                 return res;
         }
@@ -128,5 +122,3 @@ static i32 init(void) {
 
     return 0;
 }
-
-module_post_init(init);

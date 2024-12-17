@@ -37,6 +37,7 @@ typedef struct proc {
     timer_t timer;
     i32 exit_status;
 
+    void *page_table;
     usize *kern_stack;
     usize *user_stack;
     usize *sp;
@@ -45,7 +46,7 @@ typedef struct proc {
 extern proc_t *proc_table[];
 
 i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
-              const char **argv);
+              const char **argv, void *page_table);
 void proc_deinit(proc_t *proc);
 void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc);
 void proc_adopt(proc_t *new_parent, proc_t *proc);

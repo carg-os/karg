@@ -3,8 +3,6 @@
 #include <arch/riscv/csr.h>
 #include <mm/page_alloc.h>
 
-extern void *init_page_table;
-
 void proc_fill_stack(proc_t *proc, void *entry, usize usp, i32 argc,
                      char *argv) {
     void proc_entry(void);
@@ -23,6 +21,6 @@ void proc_fill_stack(proc_t *proc, void *entry, usize usp, i32 argc,
     proc->sp[27] = (usize) entry;
     proc->sp[26] = sstatus;
     proc->sp[25] = usp & ~0xF;
-    proc->sp[16] = 8ULL << 60 | (usize) init_page_table / PAGE_SIZE;
+    proc->sp[16] = 8ULL << 60 | (usize) proc->page_table / PAGE_SIZE;
     proc->sp[15] = (usize) proc_entry;
 }

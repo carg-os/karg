@@ -18,7 +18,7 @@ isize sys_proc(const trapframe_t *frame) {
     proc_t *proc = (proc_t *) kmalloc(sizeof(proc_t));
     if (!proc)
         return -ENOMEM;
-    i32 res = proc_init(proc, entry, 0, curr_proc, argc, argv);
+    i32 res = proc_init(proc, entry, 0, curr_proc, argc, argv, nullptr);
     if (res < 0)
         return res;
 

@@ -3,12 +3,14 @@
 #include <drivers/tty.h>
 #include <errno.h>
 #include <mm/page_alloc.h>
+#include <mm/vm.h>
 #include <utils/mem.h>
 #include <utils/str.h>
 
 void ctx_sw(usize **old_sp, usize **new_sp);
 void proc_fill_stack(proc_t *proc, void *entry, usize usp, i32 argc,
                      char **argv);
+void trampoline(void);
 
 proc_t *proc_table[PROC_TABLE_SIZE];
 
@@ -89,7 +91,7 @@ static i32 init_stacks(proc_t *proc, void *entry, i32 argc, const char **argv) {
 }
 
 i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
-              const char **argv) {
+              const char **argv, void *page_table) {
     proc->pid = new_pid();
     if (proc->pid < 0)
         return proc->pid;
@@ -106,9 +108,29 @@ i32 proc_init(proc_t *proc, void *entry, u32 flags, proc_t *parent, i32 argc,
     proc->state = PROC_STATE_INIT;
     timer_init(&proc->timer);
 
+    proc->page_table = page_table;
     res = init_stacks(proc, entry, argc, argv);
     if (res < 0)
         return res;
+
+    if (!(flags & PROC_FLAG_KERN)) {
+        res = vm_map_page(page_table, (usize) trampoline, trampoline,
+                          VM_FLAG_READABLE | VM_FLAG_EXECUTABLE);
+        if (res < 0)
+            return res;
+
+        res =
+            vm_map_page(page_table, (usize) proc->kern_stack, proc->kern_stack,
+                        VM_FLAG_READABLE | VM_FLAG_WRITABLE);
+        if (res < 0)
+            return res;
+
+        res =
+            vm_map_page(page_table, (usize) proc->user_stack, proc->user_stack,
+                        VM_FLAG_READABLE | VM_FLAG_WRITABLE | VM_FLAG_USER);
+        if (res < 0)
+            return res;
+    }
 
     proc_table[proc->pid] = proc;
     if (parent)
@@ -121,6 +143,7 @@ void proc_deinit(proc_t *proc) {
     proc_table[proc->pid] = nullptr;
     page_free(proc->user_stack);
     page_free(proc->kern_stack);
+    page_free(proc->page_table);
 }
 
 void proc_ctx_sw(proc_t *old_proc, proc_t *new_proc) {

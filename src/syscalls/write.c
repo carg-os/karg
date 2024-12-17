@@ -8,7 +8,7 @@
 isize sys_write(const trapframe_t *frame) {
     i32 fd = frame->a0;
     usize buf_addr;
-    i32 res = vm_virt_to_phys(init_page_table, frame->a1, &buf_addr);
+    i32 res = vm_virt_to_phys(curr_proc->page_table, frame->a1, &buf_addr);
     if (res < 0)
         return res;
     const u8 *buf = (const u8 *) buf_addr;
