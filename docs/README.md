@@ -28,23 +28,20 @@ Karg is an educational monolithic kernel designed to be the main component of [C
   The current scheduler simply implements a round-robin strategy, combined with a priority queue that sorts processes based on their priority. When performing a context switch, the scheduler selects the highest-priority process from the ready queue (which contains only processes that are ready to run) and sets it as the currently executing process. The global timer is then updated and passed to the time management subsystem to wait for the next tick.
 
   For context switching, only callee-saved registers are backed up and restored, as the caller-saved registers are already saved during the entry to the interrupt handler.
- 
+
 * **Time management** \
   Whenever a waiting operation is triggered by either the scheduler's new time tick or the invocation of the `sleep` system call, the time management subsystem inserts a new timer entry into an ordered callback queue. Each timer entry is then sorted based on its specified time. When the timer expires, the corresponding callback is executed, and the system updates the time for the next clock interrupt. This mechanism ensures efficient and accurate handling of time-dependent operations, such as process sleep and event waiting.
 
 * **Tiered memory allocator** \
-  The memory allocator in the system is divided into three components: page_alloc, kmalloc, and vmalloc, each serving a distinct purpose in memory management:
+  The memory allocator in the system is divided into two components: page_alloc and kmalloc, each serving a distinct purpose in memory management:
 
     * **page_alloc** \
-      This component manages the entire physical memory, viewing it as a series of pages, each containing 4096 bytes. page_alloc is responsible for allocating and freeing these pages, which are the basic unit of memory management in the system.
+      page_alloc manages the entire physical memory as a series of pages, each 4096 bytes in size. It is responsible for allocating and freeing these pages, which serve as the fundamental unit of memory management in low-level interactions with hardware mechanisms.
 
     * **kmalloc** \
       Built on top of page_alloc, kmalloc handles the allocation of smaller blocks of memory for kernel operations. It requests pages from page_alloc and then subdivides these pages into smaller, contiguous regions of memory of arbitrary sizes. The current implementation is based on the first-fit allocation policy.
 
-    * **vmalloc** \
-      vmalloc is used for allocating larger blocks of memory in virtual address space. It works by mapping multiple physical pages into a region in virtual memory. This allows the system to allocate large amounts of memory even if physical memory is fragmented, by creating a continuous virtual mapping for the kernel or user processes.
-
-  In summary, page_alloc manages physical memory pages, kmalloc allocates smaller contiguous memory blocks for kernel use, and vmalloc provides a mechanism to allocate larger memory areas in virtual memory by mapping pages.
+  In summary, page_alloc manages physical memory pages, while kmalloc allocates smaller, contiguous memory blocks for kernel use.
 
 * **Virtual memory** \
   The virtual memory subsystem employs the RISC-V Sv39 virtual memory mechanism. When a new process is created, the system parses the ELF executable header to set up the necessary memory mappings, allocate pages for data, and reserve space for the stack and dynamic memory. Before transitioning to user space, the kernel also configures its own address space, establishing direct mappings from virtual memory in kernel space to physical memory for regions accessed via MMIO. At the top of each virtual address space, a trampoline page serves as the shared entry point for the interrupt handler.
